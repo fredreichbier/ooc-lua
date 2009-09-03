@@ -30,7 +30,7 @@ Debug: cover from lua_Debug {
 
 Reg: cover from luaL_Reg {
     name: extern const Char*
-    //function: extern(func) extern Func
+    function: extern(func) extern Func
 }
 
 Number: cover from lua_Number
