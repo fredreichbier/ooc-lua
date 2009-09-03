@@ -1,0 +1,9 @@
+#Here's a comment
+
+= All
+Name: lua 
+Description: Lua C lib
+Requires: 
+Version: 5.1
+Libs: -llua
+#Pkgs: csfml-graphics
