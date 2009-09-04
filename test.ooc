@@ -11,12 +11,11 @@ main: func -> Int {
     }
 
     state newTable()
-//    for(i in 0..6) {
-    i := 1
+    for(i: Int in 0..7) {
         state pushNumber(i)
         state pushNumber(i*2)
         state rawSet(-3)
-//    }
+    }
     state setGlobal("foo")
     result := state pcall(0, -1, 0) /* -1 = LUA_MULTRET */
 
