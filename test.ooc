@@ -3,6 +3,9 @@ import lang.String;
 
 main: func -> Int {
     state := State new()
+
+    luaVersion println()
+
     state openLibs()
     status := state loadFile("script.lua")
     if(status) {

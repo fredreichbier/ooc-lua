@@ -18,6 +18,32 @@ Types: class {
     thread = 8 : static const Int
 }
 
+Hooks: class {
+    call = 0,
+    ret = 1,
+    line = 2,
+    count = 3,
+    tailRet = 4: static const Int
+}
+
+luaVersion: extern(LUA_VERSION) String
+release: extern(LUA_RELEASE) String
+versionNum: extern(LUA_VERSIONNUM) Int
+copyright: extern(LUA_COPYRIGHT) String
+authors: extern(LUA_AUTHORS) String
+signature: extern(LUA_SIGNATURE) String
+registryIndex: extern(LUA_REGISTRYINDEX) Int
+environIndex: extern(LUA_ENVIRONINDEX) Int
+globalsIndex: extern(LUA_GLOBALSINDEX) Int
+upValueIndex: extern(lua_upvalueindex) Int
+
+yield: extern(LUA_YIELD) Int
+errRun: extern(LUA_ERRRUN) Int
+errSyntax: extern(LUA_ERRSYNTAX) Int
+errMem: extern(LUA_ERRMEM) Int
+errErr: extern(LUA_ERRERR) Int
+
+
 Debug: cover from lua_Debug {
     event: extern Int
     name, what, source: extern const String
@@ -51,12 +77,14 @@ State: cover from lua_State* {
     remove: extern(lua_remove) func (idx: Int)
     insert: extern(lua_insert) func (idx: Int)
     replace: extern(lua_replace) func (idx: Int)
+    register: extern(lua_register) func (n: Int, f: Func)
     checkStack: extern(lua_checkstack) func (sz: Int) -> Int
     xmove: extern(lua_xmove) func (to: State, n: Int)
     isNumber: extern(lua_isnumber) func (idx: Int) -> Int
     isString: extern(lua_isstring) func (idx: Int) -> Int
     isCFunction: extern(lua_iscfunction) func (idx: Int) -> Int
     isUserData: extern(lua_isuserdata) func (idx: Int) -> Int
+    strLen: extern(lua_strlen) func (idx: Int) -> SizeT
     type: extern(lua_type) func (idx: Int) -> Int
     typeName: extern(lua_typename) func (tp: Int) -> String
     equal: extern(lua_equal) func (idx1: Int, idx2: Int) -> Int
@@ -73,6 +101,7 @@ State: cover from lua_State* {
     toThread: extern(lua_tothread) func (idx: Int) -> State
     toPointer: extern(lua_topointer) func (idx: Int) -> Void*
     pushNil: extern(lua_pushnil) func
+    pushCFunction: extern(lua_pushcfunction) func (f: Func)
     pushNumber: extern(lua_pushnumber) func (n: Number)
     pushInteger: extern(lua_pushinteger) func (n: Integer)
     pushLString: extern(lua_pushlstring) func (s: String, l: SizeT)
@@ -124,10 +153,19 @@ State: cover from lua_State* {
     getHookCount: extern(lua_gethookcount) func -> Int
     newTable: extern(lua_newtable) func
     setGlobal: extern(lua_setglobal) func (name: String)
+    getGlobal: extern(lua_getglobal) func (name: String)
+    isFunction: extern(lua_isfunction) func (n: Int) -> Bool
+    isTable: extern(lua_istable) func (n: Int) -> Bool
+    isLightUserData: extern(lua_islightuserdata) func (n: Int) -> Bool
+    isNil: extern(lua_isnil) func (n: Int) -> Bool
+    isBoolean: extern(lua_isboolean) func (n: Int) -> Bool
+    isThread: extern(lua_isthread) func (n: Int) -> Bool
+    isNone: extern(lua_isnone) func (n: Int) -> Bool
+    isNoneOrNil: extern(lua_isnoneornil) func (n: Int) -> Bool
 
     /* AUX */
     openLib: extern(luaL_openlib) func (libname: String, l: Reg*, nup: Int)
-    register: extern(luaL_register) func (libname: String, l: Reg*)
+    registerLib: extern(luaL_register) func (libname: String, l: Reg*)
     getMetaField: extern(luaL_getmetafield) func (obj: Int, e: String) -> Int
     callMeta: extern(luaL_callmeta) func (obj: Int, e: String) -> Int
     typError: extern(luaL_typerror) func (narg: Int, tname: String) -> Int
