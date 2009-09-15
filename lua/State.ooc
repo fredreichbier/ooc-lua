@@ -26,16 +26,20 @@ Hooks: class {
     tailRet = 4: static const Int
 }
 
-luaVersion: extern(LUA_VERSION) String
-release: extern(LUA_RELEASE) String
-versionNum: extern(LUA_VERSIONNUM) Int
-copyright: extern(LUA_COPYRIGHT) String
-authors: extern(LUA_AUTHORS) String
-signature: extern(LUA_SIGNATURE) String
-registryIndex: extern(LUA_REGISTRYINDEX) Int
-environIndex: extern(LUA_ENVIRONINDEX) Int
-globalsIndex: extern(LUA_GLOBALSINDEX) Int
-upValueIndex: extern(lua_upvalueindex) Int
+Lua: class {
+	
+	versionString: extern(LUA_VERSION) static String
+	release: extern(LUA_RELEASE) static String
+	versionNum: extern(LUA_VERSIONNUM) static Int
+	copyright: extern(LUA_COPYRIGHT) static String
+	authors: extern(LUA_AUTHORS) static String
+	signature: extern(LUA_SIGNATURE) static String
+	registryIndex: extern(LUA_REGISTRYINDEX) static Int
+	environIndex: extern(LUA_ENVIRONINDEX) static Int
+	globalsIndex: extern(LUA_GLOBALSINDEX) static Int
+	upValueIndex: extern(lua_upvalueindex) static func (Int) -> Int
+	
+}
 
 yield: extern(LUA_YIELD) Int
 errRun: extern(LUA_ERRRUN) Int
@@ -187,6 +191,7 @@ State: cover from lua_State* {
     ref: extern(luaL_ref) func (t: Int) -> Int
     unref: extern(luaL_unref) func (t: Int, ref: Int)
     loadFile: extern(luaL_loadfile) func (filename: const String) -> Int
+	doFile: extern(luaL_dofile) func (filename: const String) -> Int
     loadBuffer: extern(luaL_loadbuffer) func (buff: String, sz: SizeT, name: String) -> Int
     loadString: extern(luaL_loadstring) func (s: String) -> Int
     gsub: extern(luaL_gsub) func (s: String, p: String, r: String) -> String

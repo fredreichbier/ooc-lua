@@ -1,10 +1,9 @@
-import lua.State
-import lang.String;
+import lua/State
 
 main: func -> Int {
     state := State new()
 
-    luaVersion println()
+    Lua versionString println()
 
     state openLibs()
     status := state loadFile("script.lua")
