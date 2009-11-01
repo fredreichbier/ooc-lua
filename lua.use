@@ -1,9 +1,7 @@
-#Here's a comment
-
 = All
 Name: lua 
-Description: Lua C lib
+Description: Lua C libs
 Requires: 
 Version: 5.1
 Libs: -llua
-#Pkgs: csfml-graphics
+SourcePath: .

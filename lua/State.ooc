@@ -37,7 +37,7 @@ Lua: class {
 	registryIndex: extern(LUA_REGISTRYINDEX) static Int
 	environIndex: extern(LUA_ENVIRONINDEX) static Int
 	globalsIndex: extern(LUA_GLOBALSINDEX) static Int
-	upValueIndex: extern(lua_upvalueindex) static func (Int) -> Int
+	//upValueIndex: extern(lua_upvalueindex) static func (Int) -> Int
 	
 }
 
