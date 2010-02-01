@@ -27,20 +27,20 @@ Hooks: class {
 }
 
 Lua: class {
-	
-	versionString: extern(LUA_VERSION) static String
-	release: extern(LUA_RELEASE) static String
-	versionNum: extern(LUA_VERSIONNUM) static Int
-	copyright: extern(LUA_COPYRIGHT) static String
-	authors: extern(LUA_AUTHORS) static String
-	signature: extern(LUA_SIGNATURE) static String
-	registryIndex: extern(LUA_REGISTRYINDEX) static Int
-	environIndex: extern(LUA_ENVIRONINDEX) static Int
-	globalsIndex: extern(LUA_GLOBALSINDEX) static Int
-	upValueIndex: static func (index: Int) -> Int {
-		Lua globalsIndex - index
-	}
-	
+    
+    versionString: extern(LUA_VERSION) static String
+    release: extern(LUA_RELEASE) static String
+    versionNum: extern(LUA_VERSIONNUM) static Int
+    copyright: extern(LUA_COPYRIGHT) static String
+    authors: extern(LUA_AUTHORS) static String
+    signature: extern(LUA_SIGNATURE) static String
+    registryIndex: extern(LUA_REGISTRYINDEX) static Int
+    environIndex: extern(LUA_ENVIRONINDEX) static Int
+    globalsIndex: extern(LUA_GLOBALSINDEX) static Int
+    upValueIndex: static func (index: Int) -> Int {
+        Lua globalsIndex - index
+    }
+    
 }
 
 yield: extern(LUA_YIELD) Int
@@ -194,7 +194,7 @@ State: cover from lua_State* {
     ref: extern(luaL_ref) func (t: Int) -> Int
     unref: extern(luaL_unref) func (t: Int, ref: Int)
     loadFile: extern(luaL_loadfile) func (filename: const String) -> Int
-	doFile: extern(luaL_dofile) func (filename: const String) -> Int
+    doFile: extern(luaL_dofile) func (filename: const String) -> Int
     loadBuffer: extern(luaL_loadbuffer) func (buff: String, sz: SizeT, name: String) -> Int
     loadString: extern(luaL_loadstring) func (s: String) -> Int
     gsub: extern(luaL_gsub) func (s: String, p: String, r: String) -> String
