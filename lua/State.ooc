@@ -51,14 +51,14 @@ errErr: extern(LUA_ERRERR) Int
 
 
 Debug: cover from lua_Debug {
+    idSize: extern(LUA_IDSIZE) static Int
     event: extern Int
-    name, what, source: extern const String
-    nameWhat: extern(namewhat) Int
+    name, what, source, nameWhat: extern const String
     currentLine: extern(currentline) Int
     nUps: extern(nups) Int
     lineDefined: extern(linedefined) Int
     lastLineDefined: extern(lastlinedefined) Int
-    shortSrc: extern(short_src) Int//[LUA_IDSIZE]
+    shortSrc: extern(short_src) Char[Debug idSize]
 }
 
 Reg: cover from luaL_Reg {
