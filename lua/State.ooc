@@ -37,7 +37,9 @@ Lua: class {
 	registryIndex: extern(LUA_REGISTRYINDEX) static Int
 	environIndex: extern(LUA_ENVIRONINDEX) static Int
 	globalsIndex: extern(LUA_GLOBALSINDEX) static Int
-	//upValueIndex: extern(lua_upvalueindex) static func (Int) -> Int
+	upValueIndex: static func (index: Int) -> Int {
+		Lua globalsIndex - index
+	}
 	
 }
 
@@ -71,6 +73,7 @@ Integer: cover from lua_Integer
 
 State: cover from lua_State* {
     new: static extern(luaL_newstate) func -> This
+    new: static extern(lua_newstate) func ~allocator (f: Func, ud: Pointer) -> This
     close: extern(lua_close) func
     newThread: extern(lua_newthread) func -> State
     atPanic: extern(lua_atpanic) func (panicf: CFunction) -> CFunction
@@ -101,9 +104,9 @@ State: cover from lua_State* {
     toString: extern(lua_tostring) func (idx: Int) -> String
     objLen: extern(lua_objlen) func (idx: Int) -> SizeT
     toCFunction: extern(lua_tocfunction) func (idx: Int) -> CFunction
-    toUserData: extern(lua_touserdata) func (idx: Int) -> Void*
+    toUserData: extern(lua_touserdata) func (idx: Int) -> Pointer
     toThread: extern(lua_tothread) func (idx: Int) -> State
-    toPointer: extern(lua_topointer) func (idx: Int) -> Void*
+    toPointer: extern(lua_topointer) func (idx: Int) -> Pointer
     pushNil: extern(lua_pushnil) func
     pushCFunction: extern(lua_pushcfunction) func (f: Func)
     pushNumber: extern(lua_pushnumber) func (n: Number)
@@ -111,17 +114,17 @@ State: cover from lua_State* {
     pushLString: extern(lua_pushlstring) func (s: String, l: SizeT)
     pushString: extern(lua_pushstring) func (s: String)
     pushVFString: extern(lua_pushvfstring) func (fmt: String, argp: VAList) -> String
-    pushFString: extern(lua_pushfstring) func (fmt: String) -> String
+    pushFString: extern(lua_pushfstring) func (fmt: String, ...) -> String
     pushCClosure: extern(lua_pushcclosure) func (fn: CFunction, n: Int)
     pushBoolean: extern(lua_pushboolean) func (b: Int)
-    pushLightUserData: extern(lua_pushlightuserdata) func (p: Void*)
+    pushLightUserData: extern(lua_pushlightuserdata) func (p: Pointer)
     pushThread: extern(lua_pushthread) func -> Int
     getTable: extern(lua_gettable) func (idx: Int)
     getField: extern(lua_getfield) func (idx: Int, k: String)
     rawGet: extern(lua_rawget) func (idx: Int)
     rawGetI: extern(lua_rawgeti) func (idx: Int, n: Int)
     createTable: extern(lua_createtable) func (narr: Int, nrec: Int)
-    newUserData: extern(lua_newuserdata) func (sz: SizeT) -> Void*
+    newUserData: extern(lua_newuserdata) func (sz: SizeT) -> Pointer
     getMetaTable: extern(lua_getmetatable) func (objindex: Int) -> Int
     getFEnv: extern(lua_getfenv) func (idx: Int)
     setTable: extern(lua_settable) func (idx: Int)
@@ -132,9 +135,9 @@ State: cover from lua_State* {
     setFEnv: extern(lua_setfenv) func (idx: Int) -> Int
     call: extern(lua_call) func (nargs: Int, nresults: Int)
     pcall: extern(lua_pcall) func (nargs: Int, nresults: Int, errfunc: Int) -> Int
-    cpcall: extern(lua_cpcall) func (function: CFunction, ud: Void*) -> Int
-    load: extern(lua_load) func (reader: Func, dt: Void*, chunkname: String) -> Int
-    dump: extern(lua_dump) func (writer: Func, data: Void*) -> Int
+    cpcall: extern(lua_cpcall) func (function: CFunction, ud: Pointer) -> Int
+    load: extern(lua_load) func (reader: Func, dt: Pointer, chunkname: String) -> Int
+    dump: extern(lua_dump) func (writer: Func, data: Pointer) -> Int
     yield: extern(lua_yield) func (nresults: Int) -> Int
     resume: extern(lua_resume) func (narg: Int) -> Int
     status: extern(lua_status) func -> Int
@@ -142,8 +145,8 @@ State: cover from lua_State* {
     error: extern(lua_error) func -> Int
     next: extern(lua_next) func (idx: Int) -> Int
     concat: extern(lua_concat) func (n: Int)
-    getAllocF: extern(lua_getallocf) func (ud: Void**) -> Func
-    setAllocF: extern(lua_setallocf) func (f: Func, ud: Void*)
+    getAllocF: extern(lua_getallocf) func (ud: Pointer*) -> Func
+    setAllocF: extern(lua_setallocf) func (f: Func, ud: Pointer)
     setLevel: extern(lua_setlevel) func (to: State)
     getStack: extern(lua_getstack) func (level: Int, ar: Debug*) -> Int
     getInfo: extern(lua_getinfo) func (what: String, ar: Debug*) -> Int
@@ -184,7 +187,7 @@ State: cover from lua_State* {
     checkType: extern(luaL_checktype) func (narg: Int, t: Int)
     checkAny: extern(luaL_checkany) func (narg: Int)
     newMetaTable: extern(luaL_newmetatable) func (tname: String) -> Int
-    checkUData: extern(luaL_checkudata) func (ud: Int, tname: String) -> Void*
+    checkUData: extern(luaL_checkudata) func (ud: Int, tname: String) -> Pointer
     where: extern(luaL_where) func (lvl: Int)
     error: extern(luaL_error) func ~formatted (fmt: String, ...) -> Int
     checkOption: extern(luaL_checkoption) func (narg: Int, def: String, lst: String*) -> Int /* it's String[] */
