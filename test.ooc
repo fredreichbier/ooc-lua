@@ -14,8 +14,8 @@ main: func -> Int {
 
     state newTable()
     for(i: Int in 0..7) {
-        state pushNumber(i)
-        state pushNumber(i*2)
+        state pushNumber(i as Number)
+        state pushNumber((i*2) as Number)
         state rawSet(-3)
     }
     state setGlobal("foo")

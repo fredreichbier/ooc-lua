@@ -66,10 +66,10 @@ Reg: cover from luaL_Reg {
     function: extern(func) extern Func
 }
 
-Number: cover from lua_Number
+Number: cover from lua_Number extends Int
 CFunction: cover from lua_CFunction
 VAList: cover from va_list
-Integer: cover from lua_Integer
+Integer: cover from lua_Integer extends Int
 
 State: cover from lua_State* {
     new: static extern(luaL_newstate) func -> This
