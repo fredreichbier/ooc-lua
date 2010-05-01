@@ -66,7 +66,7 @@ Reg: cover from luaL_Reg {
     function: extern(func) extern Func
 }
 
-Number: cover from lua_Number extends Int
+Number: cover from lua_Number extends Double
 CFunction: cover from lua_CFunction
 VAList: cover from va_list
 Integer: cover from lua_Integer extends Int
