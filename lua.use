@@ -1,6 +1,5 @@
 Name: lua 
 Description: Lua C libs
-Requires: 
 Version: 5.1
-Libs: -llua
-SourcePath: .
+Pkgs: lua
+SourcePath: source
