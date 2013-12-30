@@ -1,5 +1,10 @@
 Name: lua 
 Description: Lua C libs
 Version: 5.1
-Pkgs: lua
 SourcePath: source
+version (apple) {
+  Pkgs: lua
+}
+version (!apple) {
+  Pkgs: lua5.1
+}
