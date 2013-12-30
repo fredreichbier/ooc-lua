@@ -2,7 +2,7 @@
 
 A [lua][lua] binding for ooc - to load and use Lua code from an ooc program.
 
-[xml]: http://www.lua.org/
+[lua]: http://www.lua.org/
 
 ### Authors
 
