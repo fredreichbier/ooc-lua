@@ -1,2 +1,5 @@
 test
+rock_tmp
 ooc_tmp
+*.dSYM
+.libs
