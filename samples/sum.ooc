@@ -7,7 +7,7 @@ main: func -> Int {
     Lua versionString println()
 
     state openLibs()
-    status := state loadFile("script.lua")
+    status := state loadFile("sum.lua")
     if(status) {
         state toString(-1) println()
         return 1
@@ -15,8 +15,8 @@ main: func -> Int {
 
     state newTable()
     for(i: Int in 0..7) {
-        state pushNumber(i as Number)
-        state pushNumber((i*2) as Number)
+        state pushNumber(i)
+        state pushNumber(i * 2)
         state rawSet(-3)
     }
     state setGlobal("foo")
@@ -26,7 +26,7 @@ main: func -> Int {
         state toString(-1) println()
         return 1
     }
-    printf("%.0f\n", state toNumber(-1))
+    "#{state toNumber(-1)}"
     state pop(1)
     state close()
 }

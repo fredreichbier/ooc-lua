@@ -1,4 +1,4 @@
--- script.lua
+-- sum.lua
 -- Receives a table, returns the sum of its components.
 io.write("The table the script received has:\n");
 x = 0

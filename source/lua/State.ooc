@@ -36,6 +36,8 @@ Lua: class {
     signature: extern(LUA_SIGNATURE) static CString
     registryIndex: extern(LUA_REGISTRYINDEX) static Int
     environIndex: extern(LUA_ENVIRONINDEX) static Int
+
+    upvalueIndex: extern(lua_upvalueindex) static func (i: Int) -> Int
     
 }
 
@@ -63,6 +65,9 @@ Reg: cover from luaL_Reg {
 }
 
 Number: cover from lua_Number extends Double
+operator implicit as (d: Double) -> Number { d }
+operator implicit as (n: Number) -> Double { n }
+
 CFunction: cover from lua_CFunction
 VAList: cover from va_list
 Integer: cover from lua_Integer extends Int
@@ -106,6 +111,7 @@ State: cover from lua_State* {
     pushNil: extern(lua_pushnil) func
     pushCFunction: extern(lua_pushcfunction) func (f: Func)
     pushNumber: extern(lua_pushnumber) func (n: Number)
+    pushNumber: func ~int (i: Int) { pushNumber(i as Double) }
     pushInteger: extern(lua_pushinteger) func (n: Integer)
     pushLString: extern(lua_pushlstring) func (s: CString, l: SizeT)
     pushString: extern(lua_pushstring) func (s: CString)
