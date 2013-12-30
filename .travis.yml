@@ -1,0 +1,11 @@
+before_install:
+  - sudo apt-get -y -qq update
+  - sudo apt-get -y -qq install curl make libgc-dev liblua-5.1-0-dev
+  - git clone --depth=1 git://github.com/nddrylliog/rock.git -b 99x
+  - (cd rock && make -s rescue)
+  - export PATH=$PATH:$PWD/rock/bin
+
+script:
+  - export OOC_LIBS=$PWD
+  - (cd samples && rock -r test)
+
