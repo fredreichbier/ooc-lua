@@ -25,4 +25,28 @@ String = ffi.metatype("lang_String__String", {
     }
 })
 
+ffi.cdef[[
+struct _howling__Person;
+typedef struct _howling__Person howling__Person;
+struct _howling__PersonClass;
+typedef struct _howling__PersonClass howling__PersonClass;
 
+howling__Person* howling__Person_new(lang_String__String* name);
+void howling__Person_greet(howling__Person* this, lang_String__String* whom);
+void howling__Person_greet_impl(howling__Person* this, lang_String__String* whom);
+void howling_load();
+]]
+
+Person = ffi.metatype("howling__Person", {
+    __index = {
+        new = function (name)
+            return ffi.C.howling__Person_new(String.create(name))
+        end,
+
+        greet = function (this, whom)
+            return ffi.C.howling__Person_greet(this, String.create(whom))
+        end
+    }
+})
+
+ffi.C.howling_load()
