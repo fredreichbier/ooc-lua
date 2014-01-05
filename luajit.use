@@ -1,0 +1,5 @@
+Name: luajit
+Description: luajit C libs
+Version: 5.1
+SourcePath: source
+Pkgs: luajit
