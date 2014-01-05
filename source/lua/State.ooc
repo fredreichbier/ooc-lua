@@ -2,7 +2,6 @@ include lua
 include lauxlib
 include lualib
 
-use lua
 use math
 
 Types: class {
