@@ -25,6 +25,26 @@ String = ffi.metatype("lang_String__String", {
     }
 })
 
+--- Convert values to their ooc counterpart.
+-- Currently, this only converts strings to lang_String__String instances.
+function to_ooc(value)
+    if type(value) == "string" then
+        return String.create(value)
+    else
+        return value
+    end
+end
+
+--- Convert ooc values to their lua counterpart.
+-- This converts lang_String__String to Lua strings.
+function from_ooc(value)
+    if ffi.istype(String, value) then
+        return value:tolua()
+    else
+        return value
+    end
+end
+
 ffi.cdef[[
 struct _howling__Person;
 typedef struct _howling__Person howling__Person;
@@ -40,11 +60,11 @@ void howling_load();
 Person = ffi.metatype("howling__Person", {
     __index = {
         new = function (name)
-            return ffi.C.howling__Person_new(String.create(name))
+            return from_ooc(ffi.C.howling__Person_new(to_ooc(name)))
         end,
 
         greet = function (this, whom)
-            return ffi.C.howling__Person_greet(this, String.create(whom))
+            return from_ooc(ffi.C.howling__Person_greet(this, to_ooc(whom)))
         end
     }
 })
