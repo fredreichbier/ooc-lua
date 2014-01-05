@@ -10,7 +10,7 @@ addWithThunk: func (state: State) -> Int{
     a := state toNumber(idx)
     b := state toNumber(-1)
     result := add(a, b)
-    state pushNumber(result)
+    state push(result)
     return 1 // result is on top of the stack
 }
 
@@ -26,11 +26,11 @@ main: func -> Int {
         return 1
     }
 
-    state pushNumber(1 as Number)
+    state push(1 as Number)
     state pushCClosure(addWithThunk as CFunction, 1)
     state setGlobal("addOne")
 
-    state pushNumber(2 as Number)
+    state push(2 as Number)
     state pushCClosure(addWithThunk as CFunction, 1)
     state setGlobal("addTwo")
 
@@ -40,7 +40,7 @@ main: func -> Int {
         state toString(-1) println()
         return 1
     }
-    "#{state toNumber(-1)}"
+    "Got value: #{state toNumber(-1)}" println()
     state pop(1)
     state close()
 }

@@ -121,6 +121,25 @@ State: cover from lua_State* {
     pushBoolean: extern(lua_pushboolean) func (b: Int)
     pushLightUserData: extern(lua_pushlightuserdata) func (p: Pointer)
     pushThread: extern(lua_pushthread) func -> Int
+
+    push: func <T> (value: T) {
+        match(T) {
+            case Int => pushNumber(value as Int)
+            case Number => pushNumber(value as Number)
+            case Double => pushNumber(value as Double)
+            case Bool => pushBoolean(value as Bool ? 1 : 0)
+            case String => pushString(value as String toCString())
+            case Pointer => {
+                if(value as Pointer == null) {
+                    pushNil()
+                } else {
+                    Exception new("Can't push %p as Pointer" format(value as Pointer)) throw()
+                }
+            }
+            case => Exception new("Can't push %s" format(T name)) throw()
+        }
+    }
+
     getTable: extern(lua_gettable) func (idx: Int)
     getField: extern(lua_getfield) func (idx: Int, k: CString)
     rawGet: extern(lua_rawget) func (idx: Int)
