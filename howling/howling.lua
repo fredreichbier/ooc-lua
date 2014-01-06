@@ -110,21 +110,3 @@ function Module:class (name, options)
     return cls
 end
 
-ffi.cdef[[
-struct _howling__Person;
-typedef struct _howling__Person howling__Person;
-struct _howling__PersonClass;
-typedef struct _howling__PersonClass howling__PersonClass;
-
-howling__Person* howling__Person_new(lang_String__String* name);
-lang_String__String *howling__Person_greet(howling__Person* this, lang_String__String* whom);
-lang_String__String *howling__Person_greet_impl(howling__Person* this, lang_String__String* whom);
-void howling_load();
-]]
-
-howling = Module:new("howling")
-howling:load()
-
-howling:class("Person", {
-    functions = {"new", "greet"}
-})
