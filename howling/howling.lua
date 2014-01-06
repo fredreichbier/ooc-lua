@@ -133,7 +133,7 @@ function Module:func (name)
 end
 
 -- Represents a rock lua backend output directory.
-Loader = {}
+Loader = {builtin = "builtin"}
 function Loader:new (path)
     -- TODO: Also stolen from the lua tutorial.
     o = {path = path}
@@ -143,6 +143,7 @@ function Loader:new (path)
 end
 
 --- Load a specific module by its path. See `splitpath`.
+-- files in `builtin` take precedence.
 -- The path is constructed as follows:
 -- "ident:path/to/module.ooc"
 -- `ident` is the usefile identifier.
@@ -151,9 +152,13 @@ function Loader:load (module)
         return nil
     end
     -- TODO: What to do on windows?
-    local package = module:gsub(":", "/") -- that's pretty evil
-    local filename = self.path .. "/ooc/" .. package
-    return require(filename) -- TODO: smells like infinity. but currently it works.
+    local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
+    local builtin = loadfile(self.builtin .. rel_filename .. ".lua")
+    if builtin ~= nil then
+        return builtin()
+    else
+        return require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
+    end
 end
 
 --- Install the loader into package.loaders

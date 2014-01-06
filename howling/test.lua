@@ -2,6 +2,8 @@ local howling = require("howling")
 local loader = howling.Loader:new("rock_tmp")
 loader:install()
 
+local numbers = require("sdk:lang/Numbers")
+
 local inventory = require("test:foo/inventory")
 
 inventory.helloWorld()
