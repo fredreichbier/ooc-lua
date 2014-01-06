@@ -1,10 +1,6 @@
 local howling = require("howling")
 
-local hai = howling.String.create("Hai")
-print("This is a ooc String: " .. tostring(hai))
-print("This is a Lua String: " .. hai:tolua())
-
-local heinz = howling.Person.new("Heinz")
+local heinz = howling.howling.Person.new("Heinz")
 local greet = heinz:greet("Hans")
 
 print(greet)

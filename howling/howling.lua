@@ -74,11 +74,11 @@ function mangle_function(module, class, func)
 end
 
 -- Generate a 
-function ooc_class(module, class, functions)
+function ooc_class(module, class, options)
     -- generate index table
     local index = {}
-    for i = 1, #functions do
-        local name = functions[i]
+    for i = 1, #options.functions do
+        local name = options.functions[i]
         local mangled = mangle_function(module, class, name)
         index[name] = caller(ffi.C[mangled])
     end
@@ -86,6 +86,28 @@ function ooc_class(module, class, functions)
     return ffi.metatype(mangle_class(module, class), {
         __index = index
     })
+end
+
+--- Represents an ooc module.
+Module = {}
+function Module:new (name)
+    -- TODO: stolen from the lua tutorial. oh my.
+    o = {name = name}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+--- Load the module, ie. initialize static values.
+function Module:load ()
+    ffi.C[self.name .. "_load"]()
+end
+
+--- Adds a ffi metatype to the module.
+function Module:class (name, options)
+    local cls = ooc_class(self.name, name, options)
+    self[name] = cls
+    return cls
 end
 
 ffi.cdef[[
@@ -100,6 +122,9 @@ lang_String__String *howling__Person_greet_impl(howling__Person* this, lang_Stri
 void howling_load();
 ]]
 
-Person = ooc_class("howling", "Person", { "new", "greet" })
+howling = Module:new("howling")
+howling:load()
 
-ffi.C.howling_load()
+howling:class("Person", {
+    functions = {"new", "greet"}
+})
