@@ -70,7 +70,7 @@ end
 
 -- Mangle a member function `func` of a class `class` in the module `module`
 function mangle_function(module, class, func)
-    return mangle_class(module, class) .. "_" .. func
+    return mangle_class(module, class) .. func
 end
 
 -- Generate a 
@@ -110,3 +110,27 @@ function Module:class (name, options)
     return cls
 end
 
+-- Adds a ffi function.
+function Module:func (name)
+    local func = caller(ffi.C[mangle_function(self.name, "", name)])
+    self[name] = func
+    return cls
+end
+
+---- Represents a rock lua backend output directory.
+--Loader = {}
+--function Loader:new (path)
+--    -- TODO: Also stolen from the lua tutorial.
+--    o = {path = path}
+--    setmetatable(o, self)
+--    self.__index = self
+--    return o
+--end
+--
+---- Load a specific module by its path.
+--function Loader:load (module)
+--    -- TODO: What to do on windows?
+--    -- TODO: Could also use `package.loaders`
+--    local filename = self.path .. "/" .. module .. ".lua"
+--    return require(filename)
+--end

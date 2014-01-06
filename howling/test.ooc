@@ -1,6 +1,8 @@
 use luajit // that's important! ffi is not available when using the ordinary lua.use
 import lua/State
 
+import foo/inventory
+
 Person: class {
     name: String
 
