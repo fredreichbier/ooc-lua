@@ -1,4 +1,8 @@
-local inventory = require("rock_tmp/ooc/test/foo/inventory")
+local howling = require("howling")
+local loader = howling.Loader:new("rock_tmp")
+loader:install()
+
+local inventory = require("test:foo/inventory")
 
 inventory.helloWorld()
 

@@ -2,14 +2,17 @@ module('howling', package.seeall)
 
 local ffi = require("ffi")
 
+-- Array handling
 ffi.cdef[[
-typedef int lang_Numbers__Int;
-struct _lang_types__Closure {
-    void *thunk;
-    void *context;
-};
-typedef struct _lang_types__Closure lang_types__Closure;
+typedef struct {
+    size_t length;
+    void* data;
+} _lang_array__Array;
 
+// This is a macro in Array.h. Let's assume we're using the GC.
+]]
+
+ffi.cdef[[
 struct _lang_String__String;
 typedef struct _lang_String__String lang_String__String;
 
@@ -129,20 +132,34 @@ function Module:func (name)
     return cls
 end
 
----- Represents a rock lua backend output directory.
---Loader = {}
---function Loader:new (path)
---    -- TODO: Also stolen from the lua tutorial.
---    o = {path = path}
---    setmetatable(o, self)
---    self.__index = self
---    return o
---end
---
----- Load a specific module by its path.
---function Loader:load (module)
---    -- TODO: What to do on windows?
---    -- TODO: Could also use `package.loaders`
---    local filename = self.path .. "/" .. module .. ".lua"
---    return require(filename)
---end
+-- Represents a rock lua backend output directory.
+Loader = {}
+function Loader:new (path)
+    -- TODO: Also stolen from the lua tutorial.
+    o = {path = path}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+--- Load a specific module by its path. See `splitpath`.
+-- The path is constructed as follows:
+-- "ident:path/to/module.ooc"
+-- `ident` is the usefile identifier.
+function Loader:load (module)
+    if module:find(":") == nil then
+        return nil
+    end
+    -- TODO: What to do on windows?
+    local package = module:gsub(":", "/") -- that's pretty evil
+    local filename = self.path .. "/ooc/" .. package
+    return require(filename) -- TODO: smells like infinity. but currently it works.
+end
+
+--- Install the loader into package.loaders
+function Loader:install()
+    table.insert(package.loaders, function (module)
+        self:load(module)
+    end) -- wat
+end
+
