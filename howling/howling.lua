@@ -3,6 +3,13 @@ module('howling', package.seeall)
 local ffi = require("ffi")
 
 ffi.cdef[[
+typedef int lang_Numbers__Int;
+struct _lang_types__Closure {
+    void *thunk;
+    void *context;
+};
+typedef struct _lang_types__Closure lang_types__Closure;
+
 struct _lang_String__String;
 typedef struct _lang_String__String lang_String__String;
 

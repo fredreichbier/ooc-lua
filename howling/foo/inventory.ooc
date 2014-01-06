@@ -28,3 +28,9 @@ Rucksack: class {
 helloWorld: func {
     "Hello World!" println()
 }
+
+callMeMaybe: func (f: Func (Int) -> Int) -> Int {
+    value := f(668)
+    "[ooc] Got value #{value} from callback" println()
+    value + 1
+}
