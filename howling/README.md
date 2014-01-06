@@ -22,7 +22,7 @@ Then, run
 rock -v -r test.ooc
 </pre>
 
-which imports ``foo/inventory.ooc`` and runs ``test.ooc``. Expected output:
+which imports ``foo/inventory.ooc`` and runs ``test.lua``. Expected output:
 
 <pre>
 Lua 5.1
