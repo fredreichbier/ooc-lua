@@ -5,4 +5,6 @@ print("This is a ooc String: " .. tostring(hai))
 print("This is a Lua String: " .. hai:tolua())
 
 local heinz = howling.Person.new("Heinz")
-heinz:greet("Hans")
+local greet = heinz:greet("Hans")
+
+print(greet)

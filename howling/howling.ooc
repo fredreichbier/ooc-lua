@@ -8,8 +8,8 @@ Person: class {
             
     }
 
-    greet: func (whom: String) {
-        "Hello #{whom} from #{name}" println()
+    greet: func (whom: String) -> String {
+        "Hello #{whom} from #{name}"
     }
 }
 
