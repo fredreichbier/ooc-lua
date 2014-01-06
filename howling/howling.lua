@@ -69,8 +69,13 @@ function mangle_class(module, class)
 end
 
 -- Mangle a member function `func` of a class `class` in the module `module`
-function mangle_function(module, class, func)
-    return mangle_class(module, class) .. func
+function mangle_member_function(module, class, func)
+    return mangle_class(module, class) .. "_" .. func
+end
+
+-- Mangle a function `func` in the module `module`
+function mangle_function(module, func)
+    return mangle_class(module, "") .. func
 end
 
 -- Generate a 
@@ -79,7 +84,7 @@ function ooc_class(module, class, options)
     local index = {}
     for i = 1, #options.functions do
         local name = options.functions[i]
-        local mangled = mangle_function(module, class, name)
+        local mangled = mangle_member_function(module, class, name)
         index[name] = caller(ffi.C[mangled])
     end
     -- Awesome ffi metatype!
@@ -112,7 +117,7 @@ end
 
 -- Adds a ffi function.
 function Module:func (name)
-    local func = caller(ffi.C[mangle_function(self.name, "", name)])
+    local func = caller(ffi.C[mangle_function(self.name, name)])
     self[name] = func
     return cls
 end
