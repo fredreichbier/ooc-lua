@@ -15,14 +15,23 @@ typedef struct {
     size_t length;
     void* data;
 } _lang_array__Array;
+
+struct _lang_String__String;
+typedef struct _lang_String__String *__s;
+
+struct _lang_types__Closure {
+    void *thunk;
+    void *context;
+};
 ]]
 
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
 function to_ooc(value)
-    print(value)
     if type(value) == "string" then
-        return ffi.C.lang_String__String_new_withCStr(value)
+        local converter = ffi.cast("__s(*)(const char *)",
+                                    ffi.C.lang_String__String_new_withCStr) -- TODO: oh wow
+        return converter(value)
     else
         return value
     end
@@ -32,7 +41,7 @@ end
 -- This converts lang_String__String to Lua strings.
 function from_ooc(value)
     if value and ffi.istype(String, value) then
-        return value:toCString()
+        return ffi.string(value:toCString())
     else
         return value
     end
