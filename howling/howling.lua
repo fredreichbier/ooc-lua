@@ -2,28 +2,44 @@ module('howling', package.seeall)
 
 local ffi = require("ffi")
 
--- Some necessary adjustments
-ffi.cdef[[
-typedef signed int ssize_t; // TODO: ffi doesn't know ssize_t. But this fix is ... not good.
+function prepare()
+    -- Some necessary adjustments
+    ffi.cdef[[
+    typedef signed int ssize_t; // TODO: ffi doesn't know ssize_t. But this fix is ... not good.
 
-typedef void* jmp_buf; // TODO: Whatever
+    typedef void* jmp_buf; // TODO: Whatever
 
-struct _FILE;
-typedef struct _FILE FILE;
+    struct _FILE;
+    typedef struct _FILE FILE;
 
-typedef struct {
-    size_t length;
-    void* data;
-} _lang_array__Array;
+    typedef struct {
+        size_t length;
+        void* data;
+    } _lang_array__Array;
 
-struct _lang_String__String;
-typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
+    struct _lang_String__String;
+    typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
 
-struct _lang_types__Closure {
-    void *thunk;
-    void *context;
-};
-]]
+    struct _lang_types__Closure {
+        void *thunk;
+        void *context;
+    };
+    ]]
+
+    local closure = ffi.metatype("struct _lang_types__Closure", {
+        __index = {
+            symname = "lang_types__Closure"
+        }
+    })
+
+    local array = ffi.metatype("_lang_array__Array", {
+        __index = {
+            symname = "lang_array__Array"
+        }
+    })
+end
+
+prepare()
 
 string_converter = nil -- oh wow
 
@@ -89,8 +105,10 @@ function ooc_class(module, class, options)
         local mangled = mangle_member_function(module, class, name)
         index[name] = caller(ffi.C[mangled])
     end
+    local symname = mangle_class(module, class)
+    index["symname"] = symname
     -- Awesome ffi metatype!
-    return ffi.metatype(mangle_class(module, class), {
+    return ffi.metatype(symname, {
         __index = index
     })
 end
@@ -180,4 +198,3 @@ function Loader:install()
         self:load(module)
     end) -- wat
 end
-
