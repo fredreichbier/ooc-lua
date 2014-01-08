@@ -17,7 +17,7 @@ typedef struct {
 } _lang_array__Array;
 
 struct _lang_String__String;
-typedef struct _lang_String__String *__s;
+typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
 
 struct _lang_types__Closure {
     void *thunk;
@@ -25,13 +25,13 @@ struct _lang_types__Closure {
 };
 ]]
 
+string_converter = nil -- oh wow
+
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
 function to_ooc(value)
     if type(value) == "string" then
-        local converter = ffi.cast("__s(*)(const char *)",
-                                    ffi.C.lang_String__String_new_withCStr) -- TODO: oh wow
-        return converter(value)
+        return string_converter(value)
     else
         return value
     end
@@ -95,6 +95,20 @@ function ooc_class(module, class, options)
     })
 end
 
+function import_types(imports)
+    for i, module in ipairs(imports) do
+        local imported = loader:load_raw(module)
+        imported.declare_types()
+    end
+end
+
+function import_funcs(imports)
+    for i, module in ipairs(imports) do
+        local imported = loader:load_raw(module)
+        imported.declare_and_bind_funcs()
+    end
+end
+
 --- Represents an ooc module.
 Module = {}
 function Module:new (name)
@@ -130,14 +144,15 @@ function init (path)
     loader = Loader:new(path)
     loader:install()
     local _mod = loader:load("sdk:lang/String")
-    _mod.init()
     String = _mod.String
+    string_converter = ffi.cast("__howling_pointer_to_string(*)(const char *)",
+                                ffi.C.lang_String__String_new_withCStr)
 end
 
 local String
 
 -- Represents a rock lua backend output directory.
-Loader = {builtin = "builtin", loading = {}}
+Loader = {}
 function Loader:new (path)
     -- TODO: Also stolen from the lua tutorial.
     o = {path = path}
@@ -146,30 +161,17 @@ function Loader:new (path)
     return o
 end
 
---- Load a specific module by its path. See `splitpath`.
--- files in `builtin` take precedence.
--- The path is constructed as follows:
--- "ident:path/to/module.ooc"
--- `ident` is the usefile identifier.
-function Loader:load (module, lazy)
-    if module:find(":") == nil then
-        return nil
-    end
-    if lazy and self.loading[module] then
-        return {lazy = true}
-    end
+function Loader:load (module)
+    local module = self:load_raw(module)
+    module.declare_types()
+    module.declare_and_bind_funcs()
+    return module
+end
+
+function Loader:load_raw (module)
     -- TODO: What to do on windows?
     local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
-    local builtin = loadfile(self.builtin .. rel_filename .. ".lua")
-    local loaded
-    self.loading[module] = true
-    if builtin ~= nil then
-        loaded = builtin()
-    else
-        loaded = require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
-    end
-    self.loading[module] = false
-    return loaded
+    return require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
 end
 
 --- Install the loader into package.loaders

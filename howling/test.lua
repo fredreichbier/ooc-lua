@@ -2,7 +2,6 @@ local howling = require("howling")
 howling.init("rock_tmp")
 
 local inventory = howling.loader:load("test:foo/inventory")
-inventory.init()
 
 inventory.helloWorld()
 
