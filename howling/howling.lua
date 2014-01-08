@@ -2,44 +2,27 @@ module('howling', package.seeall)
 
 local ffi = require("ffi")
 
--- Array handling
+-- Some necessary adjustments
 ffi.cdef[[
+typedef signed int ssize_t; // TODO: ffi doesn't know ssize_t. But this fix is ... not good.
+
+typedef void* jmp_buf; // TODO: Whatever
+
+struct _FILE;
+typedef struct _FILE FILE;
+
 typedef struct {
     size_t length;
     void* data;
 } _lang_array__Array;
-
-// This is a macro in Array.h. Let's assume we're using the GC.
 ]]
-
-ffi.cdef[[
-struct _lang_String__String;
-typedef struct _lang_String__String lang_String__String;
-
-lang_String__String* lang_String__String_new_withCStr(const char *s);
-const char *lang_String__String_toCString(lang_String__String* this);
-]]
-
-String = ffi.metatype("lang_String__String", {
-    __index = {
-        --- Return a Lua string from a String object
-        tolua = function (this)
-            -- TODO: should probably use the stored length!
-            return ffi.string(ffi.C.lang_String__String_toCString(this))
-        end,
-
-        --- Return a String object from a Lua string value
-        create = function (value)
-            return ffi.C.lang_String__String_new_withCStr(value)
-        end
-    }
-})
 
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
 function to_ooc(value)
+    print(value)
     if type(value) == "string" then
-        return String.create(value)
+        return ffi.C.lang_String__String_new_withCStr(value)
     else
         return value
     end
@@ -48,8 +31,8 @@ end
 --- Convert ooc values to their lua counterpart.
 -- This converts lang_String__String to Lua strings.
 function from_ooc(value)
-    if ffi.istype(String, value) then
-        return value:tolua()
+    if value and ffi.istype(String, value) then
+        return value:toCString()
     else
         return value
     end
@@ -91,7 +74,7 @@ end
 -- Generate a 
 function ooc_class(module, class, options)
     -- generate index table
-    local index = {}
+    local index = options.index or {}
     for i = 1, #options.functions do
         local name = options.functions[i]
         local mangled = mangle_member_function(module, class, name)
@@ -132,8 +115,20 @@ function Module:func (name)
     return cls
 end
 
+loader = nil
+--- Initialize howling with a lua backend output directory.
+function init (path)
+    loader = Loader:new(path)
+    loader:install()
+    local _mod = loader:load("sdk:lang/String")
+    _mod.init()
+    String = _mod.String
+end
+
+local String
+
 -- Represents a rock lua backend output directory.
-Loader = {builtin = "builtin"}
+Loader = {builtin = "builtin", loading = {}}
 function Loader:new (path)
     -- TODO: Also stolen from the lua tutorial.
     o = {path = path}
@@ -147,18 +142,25 @@ end
 -- The path is constructed as follows:
 -- "ident:path/to/module.ooc"
 -- `ident` is the usefile identifier.
-function Loader:load (module)
+function Loader:load (module, lazy)
     if module:find(":") == nil then
         return nil
+    end
+    if lazy and self.loading[module] then
+        return {lazy = true}
     end
     -- TODO: What to do on windows?
     local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
     local builtin = loadfile(self.builtin .. rel_filename .. ".lua")
+    local loaded
+    self.loading[module] = true
     if builtin ~= nil then
-        return builtin()
+        loaded = builtin()
     else
-        return require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
+        loaded = require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
     end
+    self.loading[module] = false
+    return loaded
 end
 
 --- Install the loader into package.loaders
