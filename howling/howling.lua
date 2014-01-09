@@ -7,9 +7,8 @@ function prepare()
     ffi.cdef[[
     typedef signed int ssize_t; // TODO: ffi doesn't know ssize_t. But this fix is ... not good.
 
-    typedef void* jmp_buf; // TODO: Whatever
+    typedef struct jmp_buf jmp_buf; // TODO: Whatever
 
-    struct _FILE;
     typedef struct _FILE FILE;
 
     typedef struct {
@@ -26,11 +25,11 @@ function prepare()
     };
     ]]
 
-    local closure = ffi.metatype("struct _lang_types__Closure", {
-        __index = {
-            symname = "lang_types__Closure"
-        }
-    })
+--    local closure = ffi.metatype("struct _lang_types__Closure", {
+--        __index = {
+-- -           symname = "lang_types__Closure"
+--        }
+--    })
 
     local array = ffi.metatype("_lang_array__Array", {
         __index = {

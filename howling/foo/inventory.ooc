@@ -1,3 +1,5 @@
+import structs/ArrayList
+
 Person: class {
     name: String
 
@@ -16,12 +18,28 @@ Person: class {
 
 Rucksack: class {
     owner: Person
+    items := ArrayList<Item> new()
 
     init: func (=owner) {
     }
 
     getOwner: func -> Person {
         owner
+    }
+
+    addItem: func (item: Item) {
+        items add(item)
+    }
+
+    getItems: func -> ArrayList<Item> {
+        items
+    }
+}
+
+Item: class {
+    name: String
+
+    init: func (=name) {
     }
 }
 
