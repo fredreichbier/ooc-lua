@@ -1,3 +1,5 @@
+
+use luajit
 include lua
 include lauxlib
 include lualib

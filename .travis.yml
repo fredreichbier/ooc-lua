@@ -1,12 +1,15 @@
 before_install:
   - sudo apt-get -y -qq update
-  - sudo apt-get -y -qq install curl make libgc-dev liblua5.1-0-dev
-  - git clone --depth=1 git://github.com/nddrylliog/rock.git -b 99x
+  - sudo apt-get -y -qq install curl make libgc-dev libluajit-5.1-dev
+  - git clone --depth=1 git://github.com/fredreichbier/rock.git -b lua-backend
   - (cd rock && make -s rescue)
   - export PATH=$PATH:$PWD/rock/bin
 
 script:
   - export OOC_LIBS=$PWD
   - cd samples
-  - rock -v -vv sum && ./sum
-  - rock -v -vv closure && ./closure
+  - rock -vv sum && ./sum
+  - rock -vv closure && ./closure
+  - rock --backend=lua test
+  - rock -vv test
+  - ./test
