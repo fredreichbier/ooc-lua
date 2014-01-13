@@ -8,7 +8,7 @@ heinz = inventory.Person.new "Heinz"
 heinz\greet!
 
 rucksack = inventory.Rucksack.new heinz
-print "The owner's name is", rucksack\getOwner!\getName!
+print "The owner's name is: #{ rucksack\getOwner!\getName! }"
 
 toothbrush = inventory.Item.new "Toothbrush"
 rucksack\addItem toothbrush
