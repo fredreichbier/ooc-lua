@@ -7,9 +7,10 @@ before_install:
 
 script:
   - export OOC_LIBS=$PWD
-  - cd samples
+  - cd ${OOC_LIBS}/samples
   - rock -vv sum && ./sum
   - rock -vv closure && ./closure
+  - cd ${OOC_LIBS}/howling
   - rock --backend=lua test
   - rock -vv test
   - ./test
