@@ -8,5 +8,5 @@ before_install:
 script:
   - export OOC_LIBS=$PWD
   - cd samples
-  - rock -v sum && ./sum
-  - rock -v closure && ./closure
+  - rock -v -vv sum && ./sum
+  - rock -v -vv closure && ./closure
