@@ -11,6 +11,7 @@ script:
   - rock -vv sum && ./sum
   - rock -vv closure && ./closure
   - cd ${OOC_LIBS}/howling
-  - rock --backend=lua test
+  - rock -x
   - rock -vv test
+  - rock -vv --backend=lua test
   - ./test
