@@ -3,3 +3,6 @@ Description: luajit C libs
 Version: 5.1
 SourcePath: source
 Pkgs: luajit
+version (apple) {
+  Libs: -pagezero_size 10000, -image_base 100000000
+}
