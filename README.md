@@ -38,6 +38,10 @@ to work, you can edit `luajit.pc` to have:
 Libs: -L${libdir} -l${libname} -Wl,--export-dynamic
 ```
 
+Also, whatever you do, **do not use Ubuntu's luajit packages**. Debian's seem
+to work, Ubuntu's are just crashing away, just do yourself a favor and compile
+everything you need, by hand, in a clean prefix, cause that's what true scots do.
+
 #### Windows (mingw-w64)
 
 With mingw, you need to use the linker option `--export-all-symbols`. If
