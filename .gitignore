@@ -4,3 +4,7 @@ ooc_tmp
 *.dSYM
 .libs
 .sam-cache
+
+# Windows stuff
+*.dll
+*.exe
