@@ -52,6 +52,56 @@ a Cflags line like this:
 Libs: -L${libdir} -l${libname} -Wl,--export-all-symbols
 ```
 
+Also, don't use a luajit build from anywhere - trust only what you build
+yourself. A command like this should work:
+
+```
+make HOST_CC="gcc -m32" CROSS=i686-w64-mingw32- TARGET_SYS=Windows BUILDMODE=dynamic
+```
+
+Contrary to pretty much every other library on earth that cross-compiles cleanly
+with mingw, luajit's a special snowflake that:
+
+  1. Gets compiled to lua51.dll - because lua C extensions are linked against that
+  name and luajit is a drop-in replacement for lua (the slower, main implementation),
+  and so fuck logic.
+  2. Doesn't have an equivalent liblua51.dll.a - apparently you can just go ahead and
+  link directly with lua51.dll, because MinGW works in mysterious ways.
+  3. Doesn't have a clean 'install' target in its Makefile when installing in a cross
+  environment. Just copy `src/laux*.h` and `src/lua*.h` to $PREFIX/include, and
+  `src/*.dll` to $PREFIX/lib. Also `etc/luajit.pc` to $PREFIX/lib/pkgconfig - but you'll
+  need to edit it by hand to change the prefix in there, and also the library name.
+
+Here's a working luajit.pc sample:
+
+```
+# Package information for LuaJIT to be used by pkg-config.
+majver=2
+minver=0
+relver=2
+version=${majver}.${minver}.${relver}
+abiver=5.1
+
+# NOTE - YOU WANT YOUR OWN PREFIX HERE, NOT MINE
+prefix=/opt/prefixes/i686-w64-mingw32
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+libname=lua51
+includedir=${prefix}/include/luajit-${majver}.${minver}
+
+INSTALL_LMOD=${prefix}/share/lua/${abiver}
+INSTALL_CMOD=${prefix}/lib/lua/${abiver}
+
+Name: LuaJIT
+Description: Just-in-time compiler for Lua
+URL: http://luajit.org
+Version: ${version}
+Requires:
+Libs: -L${libdir} -l${libname} -Wl,--export-all-symbols
+Libs.private: -Wl,-E -lm -ldl
+Cflags: -I${includedir}
+```
+
 #### OSX
 
 First things first, in luajit.use we have the following linker flags:
@@ -61,10 +111,20 @@ First things first, in luajit.use we have the following linker flags:
 ```
 
 Otherwise, it'll just crash. If you use ooc-lua normally you don't need to
-worry about that - but luajit is doing something funny with its memory allocator
-and it won't work when the default (mapping page 0 to the first 4GB of virtual memory)
+worry about that - the .use file flags will get applied and you won't need
+to change anything by hand. Hopefully it doesn't break other things, eh. 
+
+Apparently, luajit is doing something funny with its memory allocator and it
+won't work when the default (mapping page 0 to the first 4GB of virtual memory)
 is applied, apparently.
 
 With that out of the way, OSX doesn't seem to need the `-Wl,--export-dynamic` option
 at all. Not sure why. It just works, be happy.
+
+If you need help compiling luajit yourself on OSX, it's always a good idea
+to take a look at the [homebrew formula][luajit-brew] for it. It should be self-explanatory,
+and if it's not, look up the [Formula cookbook][cookbook].
+
+[luajit-brew]: https://github.com/Homebrew/homebrew/blob/master/Library/Formula/luajit.rb
+[cookbook]: https://github.com/Homebrew/homebrew/wiki/Formula-Cookbook
 
