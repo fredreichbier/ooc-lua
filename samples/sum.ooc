@@ -1,4 +1,4 @@
-use lua
+use luajit
 import lua/State
 
 main: func -> Int {

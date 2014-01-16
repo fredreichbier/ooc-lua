@@ -1,12 +1,20 @@
 before_install:
   - sudo apt-get -y -qq update
-  - sudo apt-get -y -qq install curl make libgc-dev liblua5.1-0-dev
-  - git clone --depth=1 git://github.com/nddrylliog/rock.git -b 99x
+  - sudo apt-get -y -qq install curl make libgc-dev
+  - git clone --depth=1 git://github.com/fredreichbier/rock.git -b lua-backend
   - (cd rock && make -s rescue)
   - export PATH=$PATH:$PWD/rock/bin
+  - wget http://luajit.org/download/LuaJIT-2.0.2.tar.gz
+  - tar -xvf LuaJIT-2.0.2.tar.gz
+  - (cd LuaJIT-2.0.2 && make PREFIX=/usr && sudo make install PREFIX=/usr)
 
 script:
   - export OOC_LIBS=$PWD
-  - cd samples
-  - rock -v sum && ./sum
-  - rock -v closure && ./closure
+  - cd ${OOC_LIBS}/samples
+  - rock -vv sum && ./sum
+  - rock -vv closure && ./closure
+  - cd ${OOC_LIBS}/howling
+  - rock -x
+  - rock -vv test
+  - rock -vv --backend=lua test
+  - ./test

@@ -1,4 +1,4 @@
-use lua
+use luajit
 import lua/State
 
 add: func (a, b: Double) -> Double {
