@@ -110,7 +110,7 @@ State: cover from lua_State* {
     toThread: extern(lua_tothread) func (idx: Int) -> State
     toPointer: extern(lua_topointer) func (idx: Int) -> Pointer
     pushNil: extern(lua_pushnil) func
-    pushCFunction: extern(lua_pushcfunction) func (f: Func)
+    pushCFunction: extern(lua_pushcfunction) func (f: Pointer)
     pushNumber: extern(lua_pushnumber) func (n: Number)
     pushNumber: func ~int (i: Int) { pushNumber(i as Double) }
     pushInteger: extern(lua_pushinteger) func (n: Integer)

@@ -9,6 +9,29 @@ BindingError: class extends Exception {
     }
 }
 
+howling_traceback_handler: func (state: State) -> Int {
+    if (!state isString(1)) { // message not a string?
+        return 1 // keep it intact
+    }
+
+    state getGlobal(c"debug")
+    if (!state isTable(-1)) {
+        state pop(1)
+        return 1
+    }
+
+    state getField(-1, c"traceback")
+    if (!state isFunction(-1)) {
+        state pop(2)
+        return 1
+    }
+
+    state pushValue(1) // pass error message
+    state pushInteger(2) // skip this function and traceback
+    state call(2, 1) // call debug.traceback
+    1
+}
+
 Binding: class {
     state: State
 
@@ -23,20 +46,24 @@ Binding: class {
     initHowling: func (path: String) {
         // load libraries (howling needs them)
         state openLibs()
+
+        // install traceback handler
+        state pushCFunction(howling_traceback_handler)
+
         // load the module
         err := state loadString(_HOWLING_LUA)
-        if(err != 0) {
-            BindingError new("Couldn't load howling lua code: #{state toString(-1)}") throw()            
-        }
+        _checkErrors(err, "load howling lua code")
+
         // run the module and add it to package.loaded
-        err = state pcall(0, 1, 0)
-        if(err != 0) {
-            BindingError new("Couldn't execute howling lua code: #{state toString(-1)}") throw() 
-        }
+        err = state pcall(0, 1, state getTop() - 1)
+        _checkErrors(err, "execute howling lua code")
+
         state getGlobal("package")
         state getField(-1, "loaded")
+
         // we need the howling module once again.
         state pushValue(-3)
+
         /* now the stack looks like this:
        
             howling module (top) 
@@ -65,10 +92,14 @@ Binding: class {
 
     _executeCode: func {
         // run the module and add it to package.loaded
-        err := state pcall(0, 0, 0)
-        if(err != 0) {
-            BindingError new("Couldn't execute lua code: #{state toString(-1)}") throw() 
-        }
+        err := state pcall(0, 0, state getTop() - 1)
+        _checkErrors(err, "execute lua code")
+    }
+
+    _checkErrors: func (err: Int, action: String) {
+        if (err == 0) return
+        message := state toString(-1)
+        BindingError new("Couldn't #{action}: #{message}") throw() 
     }
 
 }
