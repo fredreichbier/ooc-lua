@@ -16,5 +16,9 @@ script:
   - cd ${OOC_LIBS}/howling
   - rock -x
   - rock -vv test
-  - rock -vv --backend=lua test
+  - rock -vv --backend=luaffi test
   - ./test
+  - rock -x
+  - rock -vv --backend=luaffi bind
+  - rock -vv bind
+  - ./bind
