@@ -18,6 +18,7 @@ script:
   - rock -vv test
   - rock -vv --backend=luaffi test
   - ./test
+  - cd ${OOC_LIBS}/samples
   - rock -x
   - rock -vv --backend=luaffi bind
   - rock -vv bind
