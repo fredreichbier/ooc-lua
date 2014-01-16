@@ -20,6 +20,6 @@ script:
   - ./test
   - cd ${OOC_LIBS}/samples
   - rock -x
-  - rock -vv --backend=luaffi bind
+  - rock -vv --backend=luaffi --outpath=lua_repo bind
   - rock -vv bind
   - ./bind
