@@ -44,7 +44,7 @@ everything you need, by hand, in a clean prefix, cause that's what true scots do
 
 With mingw, you need to use the linker option `--export-all-symbols`. If
 you've compiled luajit yourself, you can simply edit `luajit.pc` to have 
-a Cflags line like this:
+a Libs line like this:
 
 ```
 Libs: -L${libdir} -l${libname} -Wl,--export-all-symbols
@@ -102,15 +102,14 @@ Cflags: -I${includedir}
 
 #### OSX
 
-First things first, in luajit.use we have the following linker flags:
+If you're building for OSX 64-bit, you need some special compiler flags. You
+may want to edit your `luajit.pc` to have a Libs line that looks like this:
 
 ```
--pagezero_size 10000 -image_base 100000000
+Libs: -L${libdir} -l${libname} -pagezero_size 10000 -image_base 100000000
 ```
 
-Otherwise, it'll just crash. If you use ooc-lua normally you don't need to
-worry about that - the .use file flags will get applied and you won't need
-to change anything by hand. Hopefully it doesn't break other things, eh. 
+Otherwise, it'll just crash. On 32-bit, it doesn't to be needed (it's harmful, even!)
 
 Apparently, luajit is doing something funny with its memory allocator and it
 won't work when the default (mapping page 0 to the first 4GB of virtual memory)
