@@ -3,6 +3,7 @@ local module = {}
 local ffi = require("ffi")
 
 -- Rescue the global variables we need
+local dofile = dofile
 local table = table
 local package = package
 local require = require
@@ -205,10 +206,16 @@ function Loader:load (module)
     return module
 end
 
+-- TODO: Rethink the loader code
 function Loader:load_raw (module)
     -- TODO: What to do on windows?
+    if package.loaded[module] then
+        return package.loaded[module]
+    end
     local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
-    return require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
+    local result = dofile(self.path .. rel_filename .. ".lua")
+    package.loaded[module] = result
+    return result
 end
 
 --- Install the loader into package.loaders
