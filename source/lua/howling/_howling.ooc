@@ -1,6 +1,6 @@
-local module = {}
+_HOWLING_LUA := c"local module = {}
 
-local ffi = require("ffi")
+local ffi = require(\"ffi\")
 
 -- Rescue the global variables we need
 local table = table
@@ -45,15 +45,15 @@ local function prepare()
     };
     ]]
 
---    local closure = ffi.metatype("struct _lang_types__Closure", {
+--    local closure = ffi.metatype(\"struct _lang_types__Closure\", {
 --        __index = {
--- -           symname = "lang_types__Closure"
+-- -           symname = \"lang_types__Closure\"
 --        }
 --    })
 
-    local array = ffi.metatype("_lang_array__Array", {
+    local array = ffi.metatype(\"_lang_array__Array\", {
         __index = {
-            symname = "lang_array__Array"
+            symname = \"lang_array__Array\"
         }
     })
 end
@@ -65,7 +65,7 @@ string_converter = nil -- oh wow
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
 function to_ooc(value)
-    if type(value) == "string" then
+    if type(value) == \"string\" then
         return string_converter(value)
     else
         return value
@@ -86,7 +86,7 @@ end
 -- And use `from_ooc` on the return value
 function call_ooc(func, ...)
     local new_arg = {}
-    for i = 1, select("#", ...) do
+    for i = 1, select(\"#\", ...) do
         new_arg[i] = to_ooc(select(i, ...))
     end
     local result = func(unpack(new_arg))
@@ -102,17 +102,17 @@ end
 
 -- Mangle a class `class` in a module `module`.
 function mangle_class(module, class)
-    return module:gsub("/", "_") .. "__" .. class
+    return module:gsub(\"/\", \"_\") .. \"__\" .. class
 end
 
 -- Mangle a member function `func` of a class `class` in the module `module`
 function mangle_member_function(module, class, func)
-    return mangle_class(module, class) .. "_" .. func
+    return mangle_class(module, class) .. \"_\" .. func
 end
 
 -- Mangle a function `func` in the module `module`
 function mangle_function(module, func)
-    return mangle_class(module, "") .. func
+    return mangle_class(module, \"\") .. func
 end
 
 -- Generate a 
@@ -125,7 +125,7 @@ function ooc_class(module, class, options)
         index[name] = caller(ffi.C[mangled])
     end
     local symname = mangle_class(module, class)
-    index["symname"] = symname
+    index[\"symname\"] = symname
     -- Awesome ffi metatype!
     return ffi.metatype(symname, {
         __index = index
@@ -158,7 +158,7 @@ end
 
 --- Load the module, ie. initialize static values.
 function Module:load ()
-    ffi.C[self.name .. "_load"]()
+    ffi.C[self.name .. \"_load\"]()
 end
 
 --- Adds a ffi metatype to the module.
@@ -180,9 +180,9 @@ loader = nil
 function init (path)
     loader = Loader:new(path)
     loader:install()
-    local _mod = loader:load("sdk:lang/String")
+    local _mod = loader:load(\"sdk:lang/String\")
     String = _mod.String
-    string_converter = ffi.cast("__howling_pointer_to_string(*)(const char *)",
+    string_converter = ffi.cast(\"__howling_pointer_to_string(*)(const char *)\",
                                 ffi.C.lang_String__String_new_withCStr)
 end
 
@@ -207,7 +207,7 @@ end
 
 function Loader:load_raw (module)
     -- TODO: What to do on windows?
-    local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
+    local rel_filename = \"/ooc/\" .. module:gsub(\":\", \"/\") -- that's pretty evil
     return require(self.path .. rel_filename) -- TODO: smells like infinity. but currently it works.
 end
 
@@ -219,3 +219,4 @@ function Loader:install()
 end
 
 return module
+"
