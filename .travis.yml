@@ -1,7 +1,7 @@
 before_install:
   - sudo apt-get -y -qq update
   - sudo apt-get -y -qq install curl make libgc-dev
-  - git clone --depth=1 git://github.com/fredreichbier/rock.git -b lua-backend
+  - git clone --depth=1 git://github.com/nddrylliog/rock.git -b 99x
   - (cd rock && make -s rescue)
   - export PATH=$PATH:$PWD/rock/bin
   - wget http://luajit.org/download/LuaJIT-2.0.2.tar.gz
