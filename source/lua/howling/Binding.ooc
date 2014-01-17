@@ -34,7 +34,7 @@ howling_traceback_handler: func (state: State) -> Int {
 
 Binding: class {
     state: State
-    TRACEBACK_HANDLER_INDEX := static 1
+    tracebackHandlerIndex: Int
 
     init: func (=state, path: String) {
         initHowling(path)
@@ -50,15 +50,16 @@ Binding: class {
 
         // install traceback handler
         // Since we push it at the very beginning, it will
-        // always be at index 1. See TRACEBACK_HANDLER_INDEX.
+        // always be at index 1. See tracebackHandlerIndex.
         state pushCFunction(howling_traceback_handler)
+        tracebackHandlerIndex = state getTop()
 
         // load the module
         err := state loadString(_HOWLING_LUA)
         _checkErrors(err, "load howling lua code")
 
         // run the module and add it to package.loaded
-        err = state pcall(0, 1, state getTop() - 1)
+        err = state pcall(0, 1, tracebackHandlerIndex)
         _checkErrors(err, "execute howling lua code")
 
         state getGlobal("package")
@@ -82,7 +83,7 @@ Binding: class {
         // call howling.init.
         state getField(-1, "init")
         state pushString(path)
-        err = state pcall(1, 0, TRACEBACK_HANDLER_INDEX)
+        err = state pcall(1, 0, tracebackHandlerIndex)
         _checkErrors(err, "initialize howling")
         // finally pop the howling module
         state pop(1)
@@ -91,19 +92,22 @@ Binding: class {
     runFile: func (filename: String) {
         err := state loadFile(filename)
         _checkErrors(err, "load lua code")
-        _executeCode()
+        pcall()
     }
 
     runString: func (code: String) {
         err := state loadString(code)
         _checkErrors(err, "load lua code")
-        _executeCode()
+        pcall()
     }
 
-    _executeCode: func {
-        // run the module and add it to package.loaded
-        err := state pcall(0, 0, TRACEBACK_HANDLER_INDEX)
-        _checkErrors(err, "execute lua code")
+    pcall: func ~boring {
+        pcall(0, 0, "execute lua code")
+    }
+
+    pcall: func (nargs, nresults: Int, action: String) {
+        err := state pcall(nargs, nresults, tracebackHandlerIndex)
+        _checkErrors(err, action)
     }
 
     _checkErrors: func (err: Int, action: String) {
