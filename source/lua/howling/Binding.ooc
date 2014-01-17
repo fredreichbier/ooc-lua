@@ -34,6 +34,7 @@ howling_traceback_handler: func (state: State) -> Int {
 
 Binding: class {
     state: State
+    TRACEBACK_HANDLER_INDEX := static 1
 
     init: func (=state, path: String) {
         initHowling(path)
@@ -48,6 +49,8 @@ Binding: class {
         state openLibs()
 
         // install traceback handler
+        // Since we push it at the very beginning, it will
+        // always be at index 1. See TRACEBACK_HANDLER_INDEX.
         state pushCFunction(howling_traceback_handler)
 
         // load the module
@@ -94,7 +97,7 @@ Binding: class {
 
     _executeCode: func {
         // run the module and add it to package.loaded
-        err := state pcall(0, 0, 1)
+        err := state pcall(0, 0, TRACEBACK_HANDLER_INDEX)
         _checkErrors(err, "execute lua code")
     }
 
