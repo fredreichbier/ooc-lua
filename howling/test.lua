@@ -1,6 +1,6 @@
 local howling = require("howling")
 howling.init("rock_tmp")
-local inventory = require("test:foo/inventorys")
+local inventory = require("test:foo/inventory")
 inventory.helloWorld()
 local heinz = inventory.Person.new("Heinz")
 heinz:greet()
