@@ -232,7 +232,7 @@ end
 -- In case the module couldn't be found, return `(nil, error message)`.
 -- This returns a Module object. Attention: This doesn't initialize
 -- the module at all (it's raw). You should use `module:init` for that.
--- This uses `self:cache` as a package.loader-like module cache.
+-- This uses `self:cache` as a package.loaded-like module cache.
 function Loader:load_raw (module)
     if self.cache[module] then
         return self.cache[module]
