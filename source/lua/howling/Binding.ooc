@@ -81,18 +81,20 @@ Binding: class {
     }
 
     runFile: func (filename: String) {
-        state loadFile(filename)
+        err := state loadFile(filename)
+        _checkErrors(err, "load lua code")
         _executeCode()
     }
 
     runString: func (code: String) {
-        state loadString(code)
+        err := state loadString(code)
+        _checkErrors(err, "load lua code")
         _executeCode()
     }
 
     _executeCode: func {
         // run the module and add it to package.loaded
-        err := state pcall(0, 0, state getTop() - 1)
+        err := state pcall(0, 0, 1)
         _checkErrors(err, "execute lua code")
     }
 
