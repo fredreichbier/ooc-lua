@@ -3,7 +3,8 @@ local module = {}
 local ffi = require("ffi")
 
 -- Rescue the global variables we need
-local dofile = dofile
+local assert = assert
+local loadfile = loadfile
 local table = table
 local package = package
 local require = require
@@ -101,19 +102,24 @@ function caller(func)
     end
 end
 
--- Mangle a class `class` in a module `module`.
-function mangle_class(module, class)
-    return module:gsub("/", "_") .. "__" .. class
+--- Mangle a module, ie. replace special characters with underscores.
+function mangle_module(module)
+    return module:gsub("[/-]", "_")
 end
 
--- Mangle a member function `func` of a class `class` in the module `module`
+--- Mangle a class `class` in a module `module`.
+function mangle_class(module, class)
+     return mangle_module(module) .. "__" .. class
+end
+
+--- Mangle a member function `func` of a class `class` in the module `module`
 function mangle_member_function(module, class, func)
     return mangle_class(module, class) .. "_" .. func
 end
 
--- Mangle a function `func` in the module `module`
+--- Mangle a function `func` in the module `module`
 function mangle_function(module, func)
-    return mangle_class(module, "") .. func
+    return mangle_module(module) .. "__" .. func
 end
 
 -- Generate a 
@@ -157,9 +163,21 @@ function Module:new (name)
     return o
 end
 
---- Load the module, ie. initialize static values.
+--- Load the module, ie. initialize static values. You should only
+-- call this once.
 function Module:load ()
-    ffi.C[self.name .. "_load"]()
+    local name = mangle_module(self.name) .. "_load"
+    ffi.cdef("void " .. name .. "();");
+    print("fuckyeahs")
+    ffi.C[name]()
+end
+
+--- Initialize the module, ie. declare all types and functions and
+-- initialize static values afterwards.
+function Module:init ()
+    self.declare_types()
+    self.declare_and_bind_funcs()
+    self:load()
 end
 
 --- Adds a ffi metatype to the module.
@@ -199,30 +217,70 @@ function Loader:new (path)
     return o
 end
 
+--- Load a module and fully initialize it, ie. declare all types and functions
+-- and call `load` to initialize static variables.
 function Loader:load (module)
-    local module = self:load_raw(module)
-    module.declare_types()
-    module.declare_and_bind_funcs()
+    local module = assert(self:load_raw(module))
+    module:init()
     return module
 end
 
--- TODO: Rethink the loader code
+--- Load a module and add it to `package.loaded`. In case the module
+-- couldn't be found, return `(nil, error message)`.
+-- This returns a Module object. Attention: This doesn't initialize
+-- the module at all (it's raw). You should use `module:init` for that.
 function Loader:load_raw (module)
-    -- TODO: What to do on windows?
     if package.loaded[module] then
         return package.loaded[module]
     end
-    local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
-    local result = dofile(self.path .. rel_filename .. ".lua")
-    package.loaded[module] = result
-    return result
+    local func, err = self:load_chunk(module)
+    if func ~= nil then
+        local mod = func()
+        package.loaded[module] = mod
+        return mod
+    else
+        return nil, err
+    end
 end
 
---- Install the loader into package.loaders
+--- Load the module and return a Lua function that returns a Module instance.
+-- Or return (nil, errorcode).
+function Loader:load_chunk (module)
+    -- TODO: What to do on windows?
+    local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
+    local filename = self.path .. rel_filename .. ".lua"
+    -- If the module exists, it must have the filename `filename`.
+    local f, errorcode = loadfile(filename)
+    if f ~= nil then
+        -- It found the module and returned a function.
+        return f
+    else
+        -- It didn't find the module and returned and error code.
+        return nil, errorcode
+    end
+end
+
+--- Install the loader into package.loaders. It will be appended to end.
+-- Afterwards, you can just use `require("usename:path/to/module")`, which
+-- will return a fully initialized module.
 function Loader:install()
+    -- This is weird: We insert a function at the end of `package.loaders`
+    -- that takes a module path. This is called when Lua searches for a module.
+    -- howling then tries to load this module. If the module is found, a unary
+    -- function(!) is returned which returns the module.
+    -- If it's not found, nil is returned.
     table.insert(package.loaders, function (module)
-        self:load(module)
-    end) -- wat
+        local loaded, err = self:load_raw(module)
+        -- additional layer of indirection \o/
+        if loaded ~= nil then
+            return function ()
+                loaded:init()
+                return loaded
+            end
+        else
+            return "\n\t" .. err
+        end
+    end)
 end
 
 return module
