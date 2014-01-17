@@ -124,7 +124,10 @@ function mangle_function(module, func)
     return mangle_module(module) .. "__" .. func
 end
 
--- Generate a 
+--- Generate a ffi metatype for the desired class and return it.
+-- `options` is a table and can contain `index`, which will
+-- be used as the base for the __index table if present.
+-- Also, it must contain `functions`, a table of member function names.
 function ooc_class(module, class, options)
     -- generate index table
     local index = options.index or {}
@@ -174,6 +177,8 @@ function Module:load ()
 end
 
 --- Initialize the module, ie. declare all types and functions.
+-- This can be called multiple times without problems (subsequent
+-- calls just don't do anything)
 function Module:init ()
     self.declare_types()
     self.declare_and_bind_funcs()
@@ -209,7 +214,7 @@ end
 Loader = {}
 function Loader:new (path)
     -- TODO: Also stolen from the lua tutorial.
-    o = {path = path}
+    o = {path = path, cache = {}}
     setmetatable(o, self)
     self.__index = self
     return o
@@ -227,14 +232,15 @@ end
 -- In case the module couldn't be found, return `(nil, error message)`.
 -- This returns a Module object. Attention: This doesn't initialize
 -- the module at all (it's raw). You should use `module:init` for that.
+-- This uses `self:cache` as a package.loaded-like module cache.
 function Loader:load_raw (module)
-    if package.loaded[module] then
-        return package.loaded[module]
+    if self.cache[module] then
+        return self.cache[module]
     end
     local func, err = self:load_chunk(module)
     if func ~= nil then
         local mod = func()
-        package.loaded[module] = mod
+        self.cache[module] = mod
         return mod
     else
         return nil, err
