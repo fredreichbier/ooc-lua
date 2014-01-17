@@ -168,16 +168,14 @@ end
 function Module:load ()
     local name = mangle_module(self.name) .. \"_load\"
     ffi.cdef(\"void \" .. name .. \"();\");
-    print(\"fuckyeahs \" .. name)
     ffi.C[name]()
 end
 
---- Initialize the module, ie. declare all types and functions and
--- initialize static values afterwards.
+--- Initialize the module, ie. declare all types and functions.
 function Module:init ()
     self.declare_types()
     self.declare_and_bind_funcs()
-    self:load()
+--    self:load() -- TODO: only load if we're in a library.
 end
 
 --- Adds a ffi metatype to the module.
