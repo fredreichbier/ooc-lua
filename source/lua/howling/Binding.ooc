@@ -73,14 +73,19 @@ Binding: class {
             package.loaded 
             package
             howling module
+            <exception handler>
         */
         state setField(-2, "howling") // package.loaded["howling"] = howling
-        // let's remove everything we don't need anymore.
-        state pop(3)
-        // and now, call "howling.init()"
-        quotedPath := path replaceAll("\"", "\\\"")
-        runString("local howling = require(\"howling\")
-                   howling.init(\"#{quotedPath}\")")
+        // let's remove everything we don't need anymore. Keep the howling module
+        // for now.
+        state pop(2)
+        // call howling.init.
+        state getField(-1, "init")
+        state pushString(path)
+        err = state pcall(1, 0, TRACEBACK_HANDLER_INDEX)
+        _checkErrors(err, "initialize howling")
+        // finally pop the howling module
+        state pop(1)
     }
 
     runFile: func (filename: String) {
