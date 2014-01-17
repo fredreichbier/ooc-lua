@@ -62,7 +62,9 @@ end
 
 prepare()
 
-string_converter = nil -- oh wow
+local String
+local string_converter = nil -- oh wow
+loader = nil
 
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
@@ -192,8 +194,8 @@ function Module:func (name)
     return cls
 end
 
-loader = nil
 --- Initialize howling with a lua backend output directory.
+-- Afterwards, you can access `howling.loader`.
 function init (path)
     loader = Loader:new(path)
     loader:install()
@@ -202,8 +204,6 @@ function init (path)
     string_converter = ffi.cast("__howling_pointer_to_string(*)(const char *)",
                                 ffi.C.lang_String__String_new_withCStr)
 end
-
-local String
 
 -- Represents a rock lua backend output directory.
 Loader = {}
@@ -215,16 +215,16 @@ function Loader:new (path)
     return o
 end
 
---- Load a module and fully initialize it, ie. declare all types and functions
--- and call `load` to initialize static variables.
+--- Load a module and fully initialize it.
+-- That means: declare all types and functions.
 function Loader:load (module)
     local module = assert(self:load_raw(module))
     module:init()
     return module
 end
 
---- Load a module and add it to `package.loaded`. In case the module
--- couldn't be found, return `(nil, error message)`.
+--- Load a module and add it to `package.loaded`.
+-- In case the module couldn't be found, return `(nil, error message)`.
 -- This returns a Module object. Attention: This doesn't initialize
 -- the module at all (it's raw). You should use `module:init` for that.
 function Loader:load_raw (module)
@@ -242,7 +242,7 @@ function Loader:load_raw (module)
 end
 
 --- Load the module and return a Lua function that returns a Module instance.
--- Or return (nil, errorcode).
+-- Or return (nil, errorcode) if the module couldn't be found.
 function Loader:load_chunk (module)
     -- TODO: What to do on windows?
     local rel_filename = "/ooc/" .. module:gsub(":", "/") -- that's pretty evil
