@@ -23,3 +23,7 @@ script:
   - rock -vv --backend=luaffi --outpath=lua_repo bind
   - rock -vv bind
   - ./bind
+  - rock -x
+  - rock -vv --backend=luaffi --outpath=lua_repo valuepassing
+  - rock -vv valuepassing
+  - ./valuepassing
