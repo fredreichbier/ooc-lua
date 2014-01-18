@@ -26,7 +26,7 @@ takePerson: func (person: Person) {
 }
 
 main: func {
-    binding := Binding new("lua_repo")
+    binding := Binding new("functions.repo")
     binding runFile("functions.lua")
     binding state getGlobal("do_stuff")
     binding callFunction(hans, "Hello World")

@@ -10,20 +10,10 @@ before_install:
 
 script:
   - export OOC_LIBS=$PWD
-  - cd ${OOC_LIBS}/samples
-  - rock -vv sum && ./sum
-  - rock -vv closure && ./closure
   - cd ${OOC_LIBS}/howling
   - rock -x
   - rock -vv test
   - rock -vv --backend=luaffi test
   - ./test
   - cd ${OOC_LIBS}/samples
-  - rock -x
-  - rock -vv --backend=luaffi --outpath=lua_repo bind
-  - rock -vv bind
-  - ./bind
-  - rock -x
-  - rock -vv --backend=luaffi --outpath=lua_repo valuepassing
-  - rock -vv valuepassing
-  - ./valuepassing
+  - make
