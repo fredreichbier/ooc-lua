@@ -85,8 +85,8 @@ function call_function(func, ...)
         end
         -- So we now have the ctype in `typ_` and we can cast accordingly.
         -- This particular way only works for class types, obviously.
-        -- TODO: there must be a better way.
-        local casted_value = from_ooc(ffi.cast(typ_.symname .. \"*\", raw_value))
+        local ptr_type = ffi.typeof(\"$*\", typ_)
+        local casted_value = from_ooc(ffi.cast(ptr_type, raw_value))
         arguments[#arguments + 1] = casted_value
     end
     return func(unpack(arguments))
