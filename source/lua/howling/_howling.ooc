@@ -70,6 +70,45 @@ local class_table = {} -- table connecting class pointers (Class*) to types
 local string_converter = nil -- oh wow
 loader = nil
 
+function to_ctype(typedecl)
+    if type(typedecl) == \"string\" then
+        return ffi.typeof(typedecl)
+    elseif type(typedecl) == \"cdata\" and typedecl[\"is_class\"] then
+        -- Classes are usually passed by reference.
+        return ffi.typeof(\"$*\", typedecl)
+    else
+        return typedecl
+    end
+end
+
+--- Make a closure and return it.
+-- Currently only closures without context are supported. You got to
+-- pass the return type and all argument types, either as strings
+-- or ctype instances.
+-- There is a special case when passing class types: In reality,
+-- a class like `String` is defined as a metatype on the String *struct*,
+-- not a pointer to the struct. So you would have to pass class types
+-- as \"lang_String__String*\" or ffi.typeof(\"$*\", String.String). Because
+-- I bet you'll never pass classes by-value, you can just pass the metatype
+-- as a type and howling converts it to a pointer to that type internally.
+function make_closure(func, returntype, ...)
+    -- first, construct a function type template using parameterized types
+    -- and ctypeize the return type and parameter types
+    local parameterdollars = {}
+    local parameters = { to_ctype(returntype) }
+    for i = 1, select(\"#\", ...) do
+        table.insert(parameterdollars, \"$\")
+        table.insert(parameters, to_ctype(select(i, ...)))
+    end
+    local template = \"$(*)(\" .. table.concat(parameterdollars, \", \") .. \")\"
+    local functype = ffi.typeof(template, unpack(parameters))
+    -- we now have a function ctype, create a Closure object now.
+    local closure = ffi.new(\"lang_types__Closure\")
+    closure.thunk = ffi.cast(functype, lua_called(func))
+    closure.context = nil
+    return closure
+end
+
 --- Internally call a Lua function with ooc parameters.
 -- First argument is the Lua function, remaining arguments
 -- are pairs of (class pointer, value pointer), both are numbers and
@@ -123,6 +162,25 @@ function call_ooc(func, ...)
     return from_ooc(result)
 end
 
+--- Call `func`, first calling `from_ooc` on all arguments.
+-- And use `to_ooc` on the return value
+-- This is useful for callbacks.
+function call_lua(func, ...)
+    local new_arg = {}
+    for i = 1, select(\"#\", ...) do
+        new_arg[i] = from_ooc(select(i, ...))
+    end
+    local result = func(unpack(new_arg))
+    return to_ooc(result)
+end
+
+--- Return a function that, when called, calls `call_lua(func, ...)`.
+function lua_called(func)
+    return function (...)
+        return call_lua(func, ...)
+    end
+end
+
 --- Return a function that, when called, calls `call_ooc(func, ...)`.
 function caller(func)
     return function (...)
@@ -164,6 +222,7 @@ function ooc_class(module, class, options)
     end
     local symname = mangle_class(module, class)
     index[\"symname\"] = symname
+    index[\"is_class\"] = true
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
         __index = index

@@ -42,6 +42,15 @@ test-valuepassing: clean valuepassing
 
 # ---
 
+closurehowl: closurehowl.ooc closurehowl.repo
+	rock -vv closurehowl.ooc
+
+test-closurehowl: clean closurehowl
+	./closurehowl
+
+
+# ---
+
 %.repo: %.ooc
 	rock --backend=luaffi --outpath=$@ $^
 
