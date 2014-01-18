@@ -116,4 +116,57 @@ Binding: class {
         BindingError new("Couldn't #{action}: #{message}") throw() 
     }
 
+    _pushHowling: func {
+        state getGlobal("package")
+        state getField(-1, "loaded")
+        state getField(-1, "howling")
+        /* stack is:
+            howling (top)
+            loaded
+            package
+        */
+        state replace(-3)
+        /* stack:
+            loaded (top)
+            howling
+        */
+        state pop(1)
+    }
+
+    _ptrToNumber: func (ptr: Pointer) -> Number {
+        ptr as UInt64 as Number // TODO: so bad
+    }
+
+    /** Call a Lua function that expects ooc object(!) arguments.
+        Assumes the desired function is on top of the stack.
+        No return value will be retrieved.
+        This pops the function from the stack.
+    */
+    callFunction: func (arguments: ...) {
+        // duplicate the function.
+        state pushValue(-1)
+        // push `call_function`
+        _pushHowling()
+        state getField(-1, "call_function")
+        /* stack:
+            call_function (top)
+            howling
+            func
+            func
+        */
+        state replace(-4)
+        state pop(1)
+        /* stack:
+            func (top)
+            call_function
+            (success!)
+        */
+        arguments each(|argument|
+            state pushNumber(_ptrToNumber(argument class))
+            state pushNumber(_ptrToNumber(argument as Pointer))
+        )
+        // the function is pushed initially and
+        // each ooc argument is pushed as (class, value)
+        pcall(arguments count * 2 + 1, 0, "call lua function")
+    }
 }

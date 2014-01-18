@@ -8,12 +8,15 @@ local loadfile = loadfile
 local table = table
 local package = package
 local require = require
+local tonumber = tonumber
 local setmetatable = setmetatable
 local ipairs = ipairs
 local select = select
 local unpack = unpack
+local tostring = tostring
 local type = type
 local print = print
+local error = error
 
 -- All global variables will be put into `module`.
 -- http://lua-users.org/wiki/ModulesTutorial
@@ -63,8 +66,31 @@ end
 prepare()
 
 local String
+local class_table = {} -- table connecting class pointers (Class*) to types
 local string_converter = nil -- oh wow
 loader = nil
+
+--- Internally call a Lua function with ooc parameters.
+-- First argument is the Lua function, remaining arguments
+-- are pairs of (class pointer, value pointer), both are numbers and
+-- will be casted accordingly.
+function call_function(func, ...)
+    arguments = {}
+    for i = 1, select(\"#\", ...)/2 do
+        local class_ptr = select(i * 2 - 1, ...)
+        local raw_value = select(i * 2, ...)
+        local typ_ = class_table[class_ptr]
+        if typ_ == nil then
+            error(\"Unknown type: \" .. tostring(class_ptr))
+        end
+        -- So we now have the ctype in `typ_` and we can cast accordingly.
+        -- This particular way only works for class types, obviously.
+        -- TODO: there must be a better way.
+        local casted_value = from_ooc(ffi.cast(typ_.symname .. \"*\", raw_value))
+        arguments[#arguments + 1] = casted_value
+    end
+    return func(unpack(arguments))
+end
 
 --- Convert values to their ooc counterpart.
 -- Currently, this only converts strings to lang_String__String instances.
@@ -139,9 +165,15 @@ function ooc_class(module, class, options)
     local symname = mangle_class(module, class)
     index[\"symname\"] = symname
     -- Awesome ffi metatype!
-    return ffi.metatype(symname, {
+    local typ_ = ffi.metatype(symname, {
         __index = index
     })
+    -- add it to the class table
+    local class_function = symname .. \"_class\"
+    ffi.cdef(\"uintptr_t \" .. class_function .. \"();\") -- apparently, uintptr_t exists.
+    local class_pointer = tonumber(ffi.C[class_function]())
+    class_table[class_pointer] = typ_
+    return typ_
 end
 
 function import_types(imports)
