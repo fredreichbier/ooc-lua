@@ -1,4 +1,4 @@
-all: test-closure test-bind test-functions
+all: test-closure test-bind test-functions test-valuepassing test-closurehowl
 
 # ---
 
@@ -48,7 +48,6 @@ closurehowl: closurehowl.ooc closurehowl.repo
 test-closurehowl: clean closurehowl
 	./closurehowl
 
-
 # ---
 
 %.repo: %.ooc
@@ -58,4 +57,4 @@ clean:
 	rock -x
 	rm -rf *.repo
 
-.PHONY: all clean test-sum test-closure test-bind test-functions test-valuepassing
+.PHONY: all clean test-sum test-closure test-bind test-functions test-valuepassing test-closurehowl

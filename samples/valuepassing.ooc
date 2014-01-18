@@ -15,7 +15,7 @@ Person: class {
 
 /* Attention: Dirty hack ahead */
 main: func {
-    binding := Binding new("lua_repo")
+    binding := Binding new("valuepassing.repo")
     person := Person new("Knuddel")
     binding runFile("valuepassing.lua")
 
