@@ -366,7 +366,7 @@ function Loader:install()
     -- If it's not found, nil is returned.
     table.insert(package.loaders, function (module)
         local loaded, err = self:load_raw(module)
-        -- additional layer of indirection \o/
+        -- additional layer of indirection
         if loaded ~= nil then
             return function ()
                 loaded:init()
