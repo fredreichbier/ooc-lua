@@ -118,7 +118,7 @@ function call_function(func, ...)
     for i = 1, select("#", ...)/2 do
         local class_ptr = ffi.cast("uintptr_t", select(i * 2 - 1, ...))
         local raw_value = select(i * 2, ...)
-        local typ_ = class_table[tonumber(class_ptr)]
+        local typ_ = class_table[tostring(class_ptr)]
         if typ_ == nil then
             error("Unknown type: " .. tostring(class_ptr))
         end
@@ -230,7 +230,7 @@ function ooc_class(module, class, options)
     -- add it to the class table
     local class_function = symname .. "_class"
     ffi.cdef("uintptr_t " .. class_function .. "();") -- apparently, uintptr_t exists.
-    local class_pointer = tonumber(ffi.C[class_function]())
+    local class_pointer = tostring(ffi.C[class_function]())
     class_table[class_pointer] = typ_
     return typ_
 end
