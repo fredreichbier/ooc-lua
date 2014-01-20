@@ -133,10 +133,6 @@ Binding: class {
         state pop(1)
     }
 
-    _ptrToNumber: func (ptr: Pointer) -> Number {
-        ptr as UInt64 as Number // TODO: so bad
-    }
-
     /** Call a Lua function that expects ooc object(!) arguments.
         Assumes the desired function is on top of the stack.
         No return value will be retrieved.
@@ -162,8 +158,8 @@ Binding: class {
             (success!)
         */
         arguments each(|argument|
-            state pushNumber(_ptrToNumber(argument class))
-            state pushNumber(_ptrToNumber(argument as Pointer))
+            state pushLightUserData(argument class)
+            state pushLightUserData(argument as Pointer)
         )
         // the function is pushed initially and
         // each ooc argument is pushed as (class, value)

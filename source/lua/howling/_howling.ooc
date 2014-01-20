@@ -116,9 +116,9 @@ end
 function call_function(func, ...)
     arguments = {}
     for i = 1, select(\"#\", ...)/2 do
-        local class_ptr = select(i * 2 - 1, ...)
+        local class_ptr = ffi.cast(\"uintptr_t\", select(i * 2 - 1, ...))
         local raw_value = select(i * 2, ...)
-        local typ_ = class_table[class_ptr]
+        local typ_ = class_table[tonumber(class_ptr)]
         if typ_ == nil then
             error(\"Unknown type: \" .. tostring(class_ptr))
         end
