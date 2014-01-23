@@ -14,4 +14,13 @@ local name_ptr = ffi.cast(ffi.typeof("$**", String.String),
                 ffi.cast("uintptr_t", heinz) +
                 ffi.cast("uintptr_t", offset)
             )
-print("Name is", name_ptr[0], howling.from_ooc(name_ptr[0]))
+print("By pointer magic, name is", name_ptr[0], howling.from_ooc(name_ptr[0]))
+
+-- by structs and offset magic
+ffi.cdef([[
+typedef struct _props__Person {
+    char data[]] .. tostring(offset) .. [[];
+    lang_String__String *the_name;
+} props_Person;
+]])
+print("By struct and offset magic, name is", heinz.the_name, howling.from_ooc(heinz.the_name))
