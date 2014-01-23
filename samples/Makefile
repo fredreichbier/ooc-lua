@@ -1,60 +1,23 @@
-all: test-closure test-bind test-functions test-valuepassing test-closurehowl
+# Although this looks horrible, you can simply add new
+# tests to the following variable. This makefile then
+# runs the Lua backend on %.ooc, then compiles and runs it.
+TESTS := closure bind functions valuepassing closurehowl oocffi sum
+TESTS_RULES := $(patsubst %,%.test,${TESTS})
+REPO_RULES := $(patsubst %,%.repo,${TESTS})
 
-# ---
+all: ${TESTS_RULES}
 
-sum: sum.ooc
-	rock -vv sum
-
-test-sum: clean sum
-	./sum
-
-# ---
-
-closure: closure.ooc
-	rock -vv closure
-
-test-closure: clean closure
-	./closure
-
-# ---
-
-bind: bind.ooc bind.repo
-	rock -vv bind.ooc
-
-test-bind: clean bind
-	./bind
-
-# ---
-
-functions: functions.ooc functions.repo
-	rock -vv functions.ooc
-
-test-functions: clean functions
-	./functions
-
-# ---
-
-valuepassing: valuepassing.ooc valuepassing.repo
-	rock -vv valuepassing.ooc
-
-test-valuepassing: clean valuepassing
-	./valuepassing
-
-# ---
-
-closurehowl: closurehowl.ooc closurehowl.repo
-	rock -vv closurehowl.ooc
-
-test-closurehowl: clean closurehowl
-	./closurehowl
-
-# ---
+%.test: clean %.repo
+	rock -vv $*
+	./$*
 
 %.repo: %.ooc
 	rock --backend=luaffi --outpath=$@ $^
 
 clean:
+	rm -f ${TESTS}
 	rock -x
 	rm -rf *.repo
 
-.PHONY: all clean test-sum test-closure test-bind test-functions test-valuepassing test-closurehowl
+.SECONDARY: ${REPO_RULES}
+.PHONY: all clean ${TEST_RULES}
