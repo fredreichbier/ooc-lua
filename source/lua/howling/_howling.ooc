@@ -253,6 +253,7 @@ function ooc_class(module, class, options)
         elseif kind == \"member\" then
             return from_ooc(self[key])
         elseif self.symname == \"lang_types__Object\" then
+            -- stop the recursion
             error((\"property/member '%s' is nowhere to be found\"):format(key))
         else
             -- ask the parent
@@ -267,6 +268,7 @@ function ooc_class(module, class, options)
         elseif kind == \"member\" then
             self[key] = to_ooc(value)
         elseif self.symname == \"lang_types__Object\" then
+            -- stop the recursion
             error((\"property/member '%s' is nowhere to be found\"):format(key))
         else
             -- ask the parent

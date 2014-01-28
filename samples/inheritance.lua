@@ -12,6 +12,6 @@ big:set("address", "this member came from Lua!")
 print("Changing members of the parent class:", big:get("address"))
 
 local status, result = pcall(function ()
-    return big:get("address")
+    return big:get("doesnotexist")
 end)
 assert(status == false)
