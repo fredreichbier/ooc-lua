@@ -249,6 +249,13 @@ function import_funcs(imports)
     end
 end
 
+function import_classes(imports)
+    for i, module in ipairs(imports) do
+        local imported = loader:load_raw(module)
+        imported.declare_classes()
+    end
+end
+
 --- Represents an ooc module.
 Module = {}
 function Module:new (name)
@@ -267,12 +274,13 @@ function Module:load ()
     ffi.C[name]()
 end
 
---- Initialize the module, ie. declare all types and functions.
+--- Initialize the module, ie. declare all types, functions and classes.
 -- This can be called multiple times without problems (subsequent
 -- calls just don't do anything)
 function Module:init ()
     self.declare_types()
     self.declare_and_bind_funcs()
+    self.declare_classes()
 --    self:load() -- TODO: only load if we're in a library.
 end
 
