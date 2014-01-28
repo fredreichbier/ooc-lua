@@ -3,5 +3,8 @@ sum
 closure
 oocffi
 bind
+deeper
+inheritance
 
 lua_repo
+*.repo
