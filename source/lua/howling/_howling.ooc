@@ -276,25 +276,32 @@ function ooc_class(module, class, options)
         end
         return self
     end
-    -- Awesome ffi metatype!
-    local typ_ = ffi.metatype(symname, {
+    setmetatable(index, {
         __index = function (self, value)
-            local resolved = index[value]
-            if resolved == nil then
-                if self.symname == \"lang_types__Object\" then
-                    error((\"function/member '%s' is nowhere to be found\"):format(value))
-                else
-                    -- just assume we're looking for a function
-                    local superfunc = self.__super__[value]
+           if self.symname == \"lang_types__Object\" then
+                error((\"function/member '%s' is nowhere to be found\"):format(value))
+            else
+                -- just assume we're looking for a function
+                local superfunc = self.__super__[value]
+                if type(superfunc) == \"function\" then
                     local supertype = ffi.typeof(self.__super__)
+                    -- We have to inject a function that casts our `this` argument
+                    -- to the correct type. If we're calling a method of the Base
+                    -- class on a Derived object, the argument type has to be Base*,
+                    -- not Derived*.
                     return function (this, ...)
                         return superfunc(ffi.cast(supertype, this), ...)
                     end
+                else
+                    error((\"Unknown attribute type '%s' retrieved from __super__: %s\"):format(
+                        type(superfunc), superfunc))
                 end
-            else
-                return resolved
             end
         end
+    })
+    -- Awesome ffi metatype!
+    local typ_ = ffi.metatype(symname, {
+        __index = index
     })
     -- add it to the class table
     local class_function = symname .. \"_class\"
