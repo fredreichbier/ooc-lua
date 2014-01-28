@@ -6,11 +6,23 @@ import lua/howling/Binding
 Person: class {
     name: String
 
+    age: UInt {
+        get {
+            "[ooc] getting age! let's return 42." println()
+            42
+        }
+        set(value) {
+            "[ooc] setting age to #{value}" println()
+        }
+    }
+
     init: func (=name) {}
 
     greet: func {
-        "Sup? My name is #{name}." println()
+        "[ooc] Sup? My name is #{name}." println()
     }
+
+
 }
 
 main: func {

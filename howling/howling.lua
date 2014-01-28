@@ -208,28 +208,54 @@ function mangle_function(module, func)
     return mangle_module(module) .. "__" .. func
 end
 
+function get_setter_name (key)
+    return "__set" .. key .. "__"
+end
+
+function get_getter_name (key)
+    return "__get" .. key .. "__"
+end
+
 --- Generate a ffi metatype for the desired class and return it.
 -- `options` is a table and can contain `index`, which will
 -- be used as the base for the __index table if present.
--- Also, it must contain `functions`, a table of member function names.
+-- Also, it must contain `functions`, a table of member function names,
+-- and `properties`, a table of property names.
 -- This also adds `get` and `set` methods for member/property access.
 function ooc_class(module, class, options)
     -- generate index table
     local index = options.index or {}
+    -- functions
     for i = 1, #options.functions do
         local name = options.functions[i]
         local mangled = mangle_member_function(module, class, name)
         index[name] = caller(ffi.C[mangled])
     end
+    -- construct properties pseudo-set
+    local properties_set = {}
+    for i = 1, #options.properties do
+        properties_set[options.properties[i]] = true
+    end
+    -- other handy stuff
     local symname = mangle_class(module, class)
     index["symname"] = symname
     index["is_class"] = true
-    -- Add accessors that do type conversion automatically
+    -- Add accessors that do type conversion automatically and handle properties.
     function index:get (key)
-        return from_ooc(self[key])
+        if properties_set[key] then
+            -- is a property!
+            return self[get_getter_name(key)](self)
+        else
+            return from_ooc(self[key])
+        end
     end
     function index:set (key, value)
-        self[key] = to_ooc(value)
+        if properties_set[key] then
+            -- is a property!
+            self[get_setter_name(key)](self, value)
+        else
+            self[key] = to_ooc(value)
+        end
         return self
     end
     -- Awesome ffi metatype!
