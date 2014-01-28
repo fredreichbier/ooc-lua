@@ -212,6 +212,7 @@ end
 -- `options` is a table and can contain `index`, which will
 -- be used as the base for the __index table if present.
 -- Also, it must contain `functions`, a table of member function names.
+-- This also adds `get` and `set` methods for member/property access.
 function ooc_class(module, class, options)
     -- generate index table
     local index = options.index or {}
@@ -223,6 +224,14 @@ function ooc_class(module, class, options)
     local symname = mangle_class(module, class)
     index[\"symname\"] = symname
     index[\"is_class\"] = true
+    -- Add accessors that do type conversion automatically
+    function index:get (key)
+        return from_ooc(self[key])
+    end
+    function index:set (key, value)
+        self[key] = to_ooc(value)
+        return self
+    end
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
         __index = index
