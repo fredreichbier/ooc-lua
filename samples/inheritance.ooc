@@ -16,7 +16,7 @@ House: class {
 
     init: func (=address) {}
     hello: func {
-        "This is #{class name} at #{address}" println()
+        "This is #{class name} at '#{address}'" println()
     }
 }
 
@@ -25,6 +25,10 @@ Skyscraper: class extends House {
 
     init: func (.address, =height) {
         super(address)
+    }
+
+    scrape: func {
+        "I'm scraping!" println()
     }
 }
 

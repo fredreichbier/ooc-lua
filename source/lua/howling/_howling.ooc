@@ -278,7 +278,23 @@ function ooc_class(module, class, options)
     end
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
-        __index = index
+        __index = function (self, value)
+            local resolved = index[value]
+            if resolved == nil then
+                if self.symname == \"lang_types__Object\" then
+                    error((\"function/member '%s' is nowhere to be found\"):format(value))
+                else
+                    -- just assume we're looking for a function
+                    local superfunc = self.__super__[value]
+                    local supertype = ffi.typeof(self.__super__)
+                    return function (this, ...)
+                        return superfunc(ffi.cast(supertype, this), ...)
+                    end
+                end
+            else
+                return resolved
+            end
+        end
     })
     -- add it to the class table
     local class_function = symname .. \"_class\"

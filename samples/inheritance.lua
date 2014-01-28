@@ -3,6 +3,19 @@ local howling = require "howling"
 
 local big = inheritance.Skyscraper.new("In your backyard", 78)
 
+-- member functions
+
+big:scrape()
+-- this is a member function of the super class
+big:hello()
+
+local status, result = pcall(function ()
+    return big:functiondoesnotexist()
+end)
+assert(status == false)
+
+-- members and properties
+
 print("Accessing properties of the parent class:", big:get("parentProperty"))
 print("Accessing members of the parent class:", big:get("address"))
 
