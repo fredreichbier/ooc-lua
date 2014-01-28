@@ -1,6 +1,6 @@
 local deeper = require "deeper:deeper"
--- if this line is commented out, the test works
--- require "deeper:deeper_bar"
+-- if this line is commented out, the test fails
+require "deeper:deeper_bar"
 local howling = require "howling"
 
 local foo = deeper.Foo.new()
