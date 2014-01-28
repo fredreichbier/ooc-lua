@@ -231,10 +231,14 @@ function ooc_class(module, class, options)
         local mangled = mangle_member_function(module, class, name)
         index[name] = caller(ffi.C[mangled])
     end
-    -- construct properties pseudo-set
-    local properties_set = {}
+    -- construct properties and members table
+    -- mapping the name to \"member\" or \"property\"
+    local members_set = {}
     for i = 1, #options.properties do
-        properties_set[options.properties[i]] = true
+        members_set[options.properties[i]] = \"property\"
+    end
+    for i = 1, #options.members do
+        members_set[options.members[i]] = \"member\"
     end
     -- other handy stuff
     local symname = mangle_class(module, class)
@@ -242,19 +246,31 @@ function ooc_class(module, class, options)
     index[\"is_class\"] = true
     -- Add accessors that do type conversion automatically and handle properties.
     function index:get (key)
-        if properties_set[key] then
+        local kind = members_set[key]
+        if kind == \"property\" then
             -- is a property!
             return self[get_getter_name(key)](self)
-        else
+        elseif kind == \"member\" then
             return from_ooc(self[key])
+        elseif self.symname == \"lang_types__Object\" then
+            error((\"property/member '%s' is nowhere to be found\"):format(key))
+        else
+            -- ask the parent
+            return self.__super__:get(key)
         end
     end
     function index:set (key, value)
-        if properties_set[key] then
+        local kind = members_set[key]
+        if kind == \"property\" then
             -- is a property!
             self[get_setter_name(key)](self, value)
-        else
+        elseif kind == \"member\" then
             self[key] = to_ooc(value)
+        elseif self.symname == \"lang_types__Object\" then
+            error((\"property/member '%s' is nowhere to be found\"):format(key))
+        else
+            -- ask the parent
+            self.__super__:set(key, value)
         end
         return self
     end
