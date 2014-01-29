@@ -278,8 +278,7 @@ function ooc_class(module, class, options)
     end
     setmetatable(index, {
         __index = function (self, value)
-            print(self, value)
-           if self.symname == \"lang_types__Object\" then
+            if self.symname == \"lang_types__Object\" then
                 error((\"function/member '%s' is nowhere to be found\"):format(value))
             else
                 -- just assume we're looking for a function
@@ -362,6 +361,7 @@ function Module:init ()
 --    self:load() -- TODO: only load if we're in a library.
 end
 
+-- Recursively handle loose imports and call `declare_classes` on them.
 function Module:import_loose_classes()
     if self._imported_loose then return end
     self._imported_loose = true
