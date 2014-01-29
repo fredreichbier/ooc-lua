@@ -278,6 +278,7 @@ function ooc_class(module, class, options)
     end
     setmetatable(index, {
         __index = function (self, value)
+            print(self, value)
            if self.symname == \"lang_types__Object\" then
                 error((\"function/member '%s' is nowhere to be found\"):format(value))
             else
@@ -357,7 +358,18 @@ function Module:init ()
     self.declare_types()
     self.declare_and_bind_funcs()
     self.declare_classes()
+    self:import_loose_classes()
 --    self:load() -- TODO: only load if we're in a library.
+end
+
+function Module:import_loose_classes()
+    if self._imported_loose then return end
+    self._imported_loose = true
+    for i, name in ipairs(self._loose_imports) do
+        local imported = loader:load_raw(name)
+        imported.declare_classes()
+        imported:import_loose_classes()
+    end
 end
 
 --- Adds a ffi metatype to the module.
