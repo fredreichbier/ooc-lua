@@ -43,11 +43,6 @@ local function prepare()
 
     struct _lang_String__String;
     typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
-
-//    struct _lang_types__Closure {
-//        void *thunk;
-//        void *context;
-//    };
     ]]
 
 --    local closure = ffi.metatype(\"struct _lang_types__Closure\", {
@@ -244,23 +239,6 @@ function ooc_class(module, class, options)
     local symname = mangle_class(module, class)
     index[\"symname\"] = symname
     index[\"is_class\"] = true
-    -- Add accessors that do type conversion automatically and handle properties.
-    function index:set (key, value)
-        local kind = members_set[key]
-        if kind == \"property\" then
-            -- is a property!
-            self[get_setter_name(key)](self, value)
-        elseif kind == \"member\" then
-            self[key] = to_ooc(value)
-        elseif self.symname == \"lang_types__Object\" then
-            -- stop the recursion
-            error((\"property/member '%s' is nowhere to be found\"):format(key))
-        else
-            -- ask the parent
-            self.__super__:set(key, value)
-        end
-        return self
-    end
     setmetatable(index, {
         __index = function (self, value)
             local kind = members_set[value]
@@ -275,7 +253,7 @@ function ooc_class(module, class, options)
             elseif self.symname == \"lang_types__Object\" then
                 error((\"function/member '%s' is nowhere to be found\"):format(value))
             else
-                -- just assume we're looking for a function
+                -- ask the superclass
                 local superval = self._values.__super__[value]
                 if type(superval) == \"function\" then
                     local supertype = ffi.typeof(self._values.__super__)

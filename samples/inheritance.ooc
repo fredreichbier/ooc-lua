@@ -18,6 +18,14 @@ House: class {
     hello: func {
         "This is #{class name} at '#{address}'" println()
     }
+
+    sayHello: func (other: House) {
+        "I'm saying hello to #{other}" println()
+    }
+
+    toString: func -> String {
+        "<#{class name}, #{address}>"
+    }
 }
 
 Skyscraper: class extends House {

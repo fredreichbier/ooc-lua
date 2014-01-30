@@ -1,6 +1,7 @@
 local inheritance = require "inheritance:inheritance"
 local howling = require "howling"
 
+local small = inheritance.House.new("Everywhere")
 local big = inheritance.Skyscraper.new("In your backyard", 78)
 
 -- member functions
@@ -8,6 +9,8 @@ local big = inheritance.Skyscraper.new("In your backyard", 78)
 big:scrape()
 -- this is a member function of the super class
 big:hello()
+
+small:sayHello(big)
 
 local status, result = pcall(function ()
     return big:functiondoesnotexist()
