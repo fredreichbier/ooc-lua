@@ -75,7 +75,7 @@ Integer: cover from lua_Integer extends Int
 
 State: cover from lua_State* {
     new: static extern(luaL_newstate) func -> This
-    new: static extern(lua_newstate) func ~allocator (f: Func, ud: Pointer) -> This
+    new: static extern(lua_newstate) func ~allocator (f: Pointer, ud: Pointer) -> This
     close: extern(lua_close) func
     newThread: extern(lua_newthread) func -> State
     atPanic: extern(lua_atpanic) func (panicf: CFunction) -> CFunction
@@ -168,7 +168,7 @@ State: cover from lua_State* {
     next: extern(lua_next) func (idx: Int) -> Int
     concat: extern(lua_concat) func (n: Int)
     getAllocF: extern(lua_getallocf) func (ud: Pointer*) -> Func
-    setAllocF: extern(lua_setallocf) func (f: Func, ud: Pointer)
+    setAllocF: extern(lua_setallocf) func (f: Pointer, ud: Pointer)
     setLevel: extern(lua_setlevel) func (to: State)
     getStack: extern(lua_getstack) func (level: Int, ar: Debug*) -> Int
     getInfo: extern(lua_getinfo) func (what: CString, ar: Debug*) -> Int

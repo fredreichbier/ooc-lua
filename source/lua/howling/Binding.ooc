@@ -32,6 +32,20 @@ howling_traceback_handler: func (state: State) -> Int {
     1
 }
 
+// custom lua allocator based on Boehm GC
+lalloc: func (ud: Pointer, ptr: Pointer, osize: SizeT, nsize: SizeT) -> Pointer {
+    if (nsize == 0) {
+        gc_free(ptr)
+        return null
+    }
+
+    if (osize == 0) {
+        return gc_malloc_uncollectable(nsize)
+    }
+
+    return gc_realloc(ptr, nsize)
+}
+
 Binding: class {
     state: State
     tracebackHandlerIndex: Int
@@ -41,7 +55,7 @@ Binding: class {
     }
 
     init: func ~newState (path: String) {
-        init(State new(), path)
+        init(State new(lalloc, null), path)
     }
 
     initHowling: func (path: String) {
