@@ -4,7 +4,7 @@ local deeper = require "deeper:deeper"
 local howling = require "howling"
 
 local foo = deeper.Foo.new()
-local bar = foo:get("bar")
-local x = bar:get("x")
+local bar = foo.bar
+local x = bar.x
 print("x = " .. x)
 assert (x == 42)

@@ -16,15 +16,15 @@ assert(status == false)
 
 -- members and properties
 
-print("Accessing properties of the parent class:", big:get("parentProperty"))
-print("Accessing members of the parent class:", big:get("address"))
+print("Accessing properties of the parent class:", big.parentProperty)
+print("Accessing members of the parent class:", big.address)
 
-big:set("parentProperty", "Lua value!")
+big.parentProperty = "Lua value!"
 
-big:set("address", "this member came from Lua!")
-print("Changing members of the parent class:", big:get("address"))
+big.address = "this member came from Lua!"
+print("Changing members of the parent class:", big.address)
 
 local status, result = pcall(function ()
-    return big:get("doesnotexist")
+    return big.doesnotexist
 end)
 assert(status == false)

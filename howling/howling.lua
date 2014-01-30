@@ -43,11 +43,6 @@ local function prepare()
 
     struct _lang_String__String;
     typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
-
-    struct _lang_types__Closure {
-        void *thunk;
-        void *context;
-    };
     ]]
 
 --    local closure = ffi.metatype("struct _lang_types__Closure", {
@@ -244,64 +239,54 @@ function ooc_class(module, class, options)
     local symname = mangle_class(module, class)
     index["symname"] = symname
     index["is_class"] = true
-    -- Add accessors that do type conversion automatically and handle properties.
-    function index:get (key)
-        local kind = members_set[key]
-        if kind == "property" then
-            -- is a property!
-            return self[get_getter_name(key)](self)
-        elseif kind == "member" then
-            return from_ooc(self[key])
-        elseif self.symname == "lang_types__Object" then
-            -- stop the recursion
-            error(("property/member '%s' is nowhere to be found"):format(key))
-        else
-            -- ask the parent
-            return self.__super__:get(key)
-        end
-    end
-    function index:set (key, value)
-        local kind = members_set[key]
-        if kind == "property" then
-            -- is a property!
-            self[get_setter_name(key)](self, value)
-        elseif kind == "member" then
-            self[key] = to_ooc(value)
-        elseif self.symname == "lang_types__Object" then
-            -- stop the recursion
-            error(("property/member '%s' is nowhere to be found"):format(key))
-        else
-            -- ask the parent
-            self.__super__:set(key, value)
-        end
-        return self
-    end
     setmetatable(index, {
         __index = function (self, value)
-            if self.symname == "lang_types__Object" then
+            local kind = members_set[value]
+            if kind ~= nil then
+                if kind == "property" then
+                    return self[get_getter_name(value)](self)
+                elseif kind == "member" then
+                    return from_ooc(self._values[value])
+                else
+                    error("unknown kind: " .. tostring(kind))
+                end
+            elseif self.symname == "lang_types__Object" then
                 error(("function/member '%s' is nowhere to be found"):format(value))
             else
-                -- just assume we're looking for a function
-                local superfunc = self.__super__[value]
-                if type(superfunc) == "function" then
-                    local supertype = ffi.typeof(self.__super__)
+                -- ask the superclass
+                local superval = self._values.__super__[value]
+                if type(superval) == "function" then
+                    local supertype = ffi.typeof(self._values.__super__)
                     -- We have to inject a function that casts our `this` argument
                     -- to the correct type. If we're calling a method of the Base
                     -- class on a Derived object, the argument type has to be Base*,
                     -- not Derived*.
                     return function (this, ...)
-                        return superfunc(ffi.cast(supertype, this), ...)
+                        return superval(ffi.cast(supertype, this), ...)
                     end
                 else
-                    error(("Unknown attribute type '%s' retrieved from __super__: %s"):format(
-                        type(superfunc), superfunc))
+                    return superval
                 end
             end
         end
     })
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
-        __index = index
+        __index = index,
+        __newindex = function (self, key, value)
+            -- set a property or a member
+            local kind = members_set[key]
+            if kind == "property" then
+                self[get_setter_name(key)](self, value)
+            elseif kind == "member" then
+                self._values[key] = to_ooc(value)
+            elseif self.symname == "lang_types__Object" then
+                error(("Couldn't set value. Unknown key: '%s'"):format(key))
+            else
+                -- try the superclass
+                self._values.__super__[key] = value
+            end
+        end
     })
     -- add it to the class table
     local class_function = symname .. "_class"
