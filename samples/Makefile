@@ -8,7 +8,7 @@ REPO_RULES := $(patsubst %,%.repo,${TESTS})
 all: ${TESTS_RULES}
 
 %.test: clean %.repo
-	rock -vv $*
+	rock -v $*
 	./$*
 
 %.repo: %.ooc

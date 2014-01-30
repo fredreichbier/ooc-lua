@@ -9,7 +9,7 @@ heinz:greet()
 
 print("[lua] By accessing the struct, we know the name is", heinz.name)
 print("[lua] Enter magical transformation process...")
-heinz:set("name", "Wurst")
+heinz.name = "Wurst"
 
 heinz:greet()
 

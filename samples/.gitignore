@@ -5,6 +5,10 @@ oocffi
 bind
 deeper
 inheritance
+valuepassing
+props
+functions
+closurehowl
 
 lua_repo
 *.repo
