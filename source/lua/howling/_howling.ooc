@@ -296,6 +296,26 @@ function ooc_class(module, class, options)
     return typ_
 end
 
+--- Generate table with info re: desired enum and return it
+-- `options` is a table and contains `values`, a list of the enums' values
+-- and their C symbols
+function ooc_enum(module, enum, options)
+    -- generate index table
+    local index = {}
+
+    -- symbol name - we need that to get the value struct
+    local symname = mangle_class(module, enum)
+    index[\"symname\"] = symname
+
+    -- construct values tables
+    for i = 1, #options.values do
+        local name = options.values[i]
+        index[name] = ffi.C[symname .. \"__values\"][name]
+    end
+
+    return index
+end
+
 function import_types(imports)
     for i, module in ipairs(imports) do
         local imported = loader:load_raw(module)
@@ -362,6 +382,13 @@ function Module:class (name, options)
     local cls = ooc_class(self.name, name, options)
     self[name] = cls
     return cls
+end
+
+-- Adds a ffi enum to the module
+function Module:enum (name, options)
+    local enum = ooc_enum(self.name, name, options)
+    self[name] = enum
+    return enum
 end
 
 -- Adds a ffi function.
