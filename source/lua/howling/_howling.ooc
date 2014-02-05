@@ -239,6 +239,7 @@ function ooc_class(module, class, options)
     local symname = mangle_class(module, class)
     index_table[\"symname\"] = symname
     index_table[\"is_class\"] = true
+    index_table[\"index_table\"] = index_table
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
         __index = function (self, value)
@@ -268,9 +269,13 @@ function ooc_class(module, class, options)
                     -- to the correct type. If we're calling a method of the Base
                     -- class on a Derived object, the argument type has to be Base*,
                     -- not Derived*.
-                    return function (this, ...)
+                    local casted = function (this, ...)
                         return superval(ffi.cast(supertype, this), ...)
                     end
+                    -- Add the casted function to the index table to avoid lookups
+                    -- and casts every time it's called.
+                    index_table[value] = casted
+                    return casted
                 else
                     return superval
                 end

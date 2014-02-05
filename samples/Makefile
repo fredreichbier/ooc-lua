@@ -1,7 +1,7 @@
 # Although this looks horrible, you can simply add new
 # tests to the following variable. This makefile then
 # runs the Lua backend on %.ooc, then compiles and runs it.
-TESTS := closure bind functions valuepassing closurehowl oocffi sum props inheritance deeper
+TESTS := closure bind functions valuepassing closurehowl oocffi sum props inheritance deeper cache
 TESTS_RULES := $(patsubst %,%.test,${TESTS})
 REPO_RULES := $(patsubst %,%.repo,${TESTS})
 
