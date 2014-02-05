@@ -219,12 +219,12 @@ end
 -- This also adds `get` and `set` methods for member/property access.
 function ooc_class(module, class, options)
     -- generate index table
-    local index = options.index or {}
+    local index_table = options.index or {}
     -- functions
     for i = 1, #options.functions do
         local name = options.functions[i]
         local mangled = mangle_member_function(module, class, name)
-        index[name] = caller(ffi.C[mangled])
+        index_table[name] = caller(ffi.C[mangled])
     end
     -- construct properties and members table
     -- mapping the name to "member" or "property"
@@ -237,10 +237,17 @@ function ooc_class(module, class, options)
     end
     -- other handy stuff
     local symname = mangle_class(module, class)
-    index["symname"] = symname
-    index["is_class"] = true
-    setmetatable(index, {
+    index_table["symname"] = symname
+    index_table["is_class"] = true
+    -- Awesome ffi metatype!
+    local typ_ = ffi.metatype(symname, {
         __index = function (self, value)
+            -- Check the index table (cache) first
+            local cached = index_table[value]
+            if cached ~= nil then
+                return cached
+            end
+            -- Then, check for members
             local kind = members_set[value]
             if kind ~= nil then
                 if kind == "property" then
@@ -268,11 +275,7 @@ function ooc_class(module, class, options)
                     return superval
                 end
             end
-        end
-    })
-    -- Awesome ffi metatype!
-    local typ_ = ffi.metatype(symname, {
-        __index = index,
+        end,
         __newindex = function (self, key, value)
             -- set a property or a member
             local kind = members_set[key]
