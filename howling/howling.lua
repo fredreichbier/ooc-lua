@@ -43,6 +43,16 @@ local function prepare()
 
     struct _lang_String__String;
     typedef struct _lang_String__String *__howling_pointer_to_string; // TODO: Too ugly
+
+    // Predefine an unrolled class struct. I assume this won't change much.
+    struct __howling_predef_Class {
+        void* class;
+        size_t instanceSize;
+        size_t size;
+        struct _lang_String__String* name;
+        struct __howling_predef_Class* super;
+    };
+
     ]]
 
 --    local closure = ffi.metatype("struct _lang_types__Closure", {
@@ -263,23 +273,36 @@ function ooc_class(module, class, options)
             elseif self.symname == "lang_types__Object" then
                 error(("function/member '%s' is nowhere to be found"):format(value))
             else
-                -- ask the superclass
-                local superval = self._values.__super__[value]
-                if type(superval) == "function" then
-                    local supertype = ffi.typeof(self._values.__super__)
-                    -- We have to inject a function that casts our `this` argument
-                    -- to the correct type. If we're calling a method of the Base
-                    -- class on a Derived object, the argument type has to be Base*,
-                    -- not Derived*.
-                    local casted = function (this, ...)
-                        return superval(ffi.cast(supertype, this), ...)
+                -- well, are we trying to access a static member or a non-static member?
+                if self == ffi.typeof(self) then -- static function. TODO: better check?
+                    -- Ask our supertype directly, no cast needed.
+                    -- But we can still cache it!
+                    local superval = self.superclass[value]
+                    -- TODO: Since static members work totally differently, this only
+                    -- works for static member functions anyway.
+                    if type(superval) == "function" then
+                        index_table[value] = superval
                     end
-                    -- Add the casted function to the index table to avoid lookups
-                    -- and casts every time it's called.
-                    index_table[value] = casted
-                    return casted
-                else
                     return superval
+                else
+                    -- ask the superclass
+                    local superval = self._values.__super__[value]
+                    if type(superval) == "function" then
+                        local supertype = ffi.typeof(self._values.__super__)
+                        -- We have to inject a function that casts our `this` argument
+                        -- to the correct type. If we're calling a method of the Base
+                        -- class on a Derived object, the argument type has to be Base*,
+                        -- not Derived*.
+                        local casted = function (this, ...)
+                            return superval(ffi.cast(supertype, this), ...)
+                        end
+                        -- Add the casted function to the index table to avoid lookups
+                        -- and casts every time it's called.
+                        index_table[value] = casted
+                        return casted
+                    else
+                        return superval
+                    end
                 end
             end
         end,
@@ -299,10 +322,17 @@ function ooc_class(module, class, options)
         end
     })
     -- add it to the class table
+    -- Call the _class function directly to get the class pointer
     local class_function = symname .. "_class"
     ffi.cdef("uintptr_t " .. class_function .. "();") -- apparently, uintptr_t exists.
-    local class_pointer = tostring(ffi.C[class_function]())
-    class_table[class_pointer] = typ_
+    local class_pointer = ffi.C[class_function]()
+    -- Store the pointer as a string, because it might not fit into the Lua doubles.
+    class_table[tostring(class_pointer)] = typ_
+    -- Now, we can even determine the superclass!
+    local class_struct = ffi.cast("struct __howling_predef_Class*", class_pointer)
+    local super_pointer = ffi.cast("uintptr_t", class_struct.super)
+    -- We assume the superclass has already been added to the classtable.
+    index_table["superclass"] = class_table[tostring(super_pointer)]
     return typ_
 end
 

@@ -7,6 +7,10 @@ A: class {
     hello: func {
         "Hello world!" println()
     }
+
+    staticYo: static func {
+        "YO from a static func!" println()
+    }
 }
 
 B: class extends A {
