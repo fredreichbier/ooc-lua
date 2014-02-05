@@ -243,6 +243,8 @@ function ooc_class(module, class, options)
     -- Awesome ffi metatype!
     local typ_ = ffi.metatype(symname, {
         __index = function (self, value)
+            -- TODO: This is here to detect that something is wrong early.
+            assert(value ~= \"_values\")
             -- Check the index table (cache) first
             local cached = index_table[value]
             if cached ~= nil then
