@@ -11,10 +11,5 @@ before_install:
 
 script:
   - export OOC_LIBS=$PWD
-  - cd ${OOC_LIBS}/howling
-  - rock -x
-  - rock -vv test
-  - rock -vv --backend=luaffi test
-  - ./test
   - cd ${OOC_LIBS}/samples
   - make
