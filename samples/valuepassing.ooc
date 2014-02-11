@@ -13,7 +13,6 @@ Person: class {
     }
 }
 
-/* Attention: Dirty hack ahead */
 main: func {
     binding := Binding new("valuepassing.repo")
     person := Person new("Knuddel")
