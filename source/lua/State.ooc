@@ -8,7 +8,7 @@ use math
 
 Types: class {
     none = -1,
-    nil = 0,
+    nil_ = 0,
     boolean = 1,
     lightUserData = 2,
     number = 3,
