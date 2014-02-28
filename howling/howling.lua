@@ -86,6 +86,19 @@ function to_ctype(typedecl)
     end
 end
 
+--- Convenience shortcut for ffi.cast.
+-- You can use this to easily downcast ooc objects. Example:
+--   ffi.cast(ffi.typeof("$*", MyClass), myObject)
+-- simplifies to:
+--   howling.cast(MyClass, myObject)
+function cast(typedecl, value)
+    if type(typedecl) == "string" then
+        return ffi.cast(typedecl, value)
+    else
+        return ffi.cast(to_ctype(typedecl), value)
+    end
+end
+
 --- Make a closure and return it.
 -- Currently only closures without context are supported. You got to
 -- pass the return type and all argument types, either as strings
