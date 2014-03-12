@@ -30,29 +30,6 @@ return function (err)
 end
 "
 
-howling_traceback_handler: func (state: State) -> Int {
-    if (!state isString(1)) { // message not a string?
-        return 1 // keep it intact
-    }
-
-    state getGlobal(c"debug")
-    if (!state isTable(-1)) {
-        state pop(1)
-        return 1
-    }
-
-    state getField(-1, c"traceback")
-    if (!state isFunction(-1)) {
-        state pop(2)
-        return 1
-    }
-
-    state pushValue(1) // pass error message
-    state pushInteger(2) // skip this function and traceback
-    state call(2, 1) // call debug.traceback
-    1
-}
-
 // custom lua allocator based on Boehm GC
 lalloc: func (ud: Pointer, ptr: Pointer, osize: SizeT, nsize: SizeT) -> Pointer {
     if (nsize == 0) {
@@ -86,7 +63,6 @@ Binding: class {
         // install traceback handler
         // Since we push it at the very beginning, it will
         // always be at index 1. See tracebackHandlerIndex.
-        // state pushCFunction(howling_traceback_handler)
         err := state loadString(_TRACEBACK_LUA)
         _checkErrors(err, "load traceback lua code")
 
@@ -94,7 +70,6 @@ Binding: class {
         _checkErrors(err, "executing traceback lua code")
 
         tracebackHandlerIndex = state getTop()
-        "Traceback code installed, index = %d" printfln(tracebackHandlerIndex)
 
         // load the module
         err = state loadString(_HOWLING_LUA)
