@@ -10,17 +10,39 @@ BindingError: class extends Exception {
 }
 
 _TRACEBACK_LUA := "
-local onerror = function (message)
-    -- skip this function and traceback
-    local traceback = debug.traceback(message, 2)
+local onerror = function (err)
+    print('err:' .. err)
 
     if package.loaded['moonscript.errors'] then
-        -- rewrite using .moon line numbers
-        print('It is happening!')
-        traceback = rewrite_traceback(traceback)
-    end
+        print('got moonscript')
 
-    return traceback
+        local trace = debug.traceback('', 2)
+        print('trace:' .. trace)
+
+        -- rewrite using .moon line numbers
+        local errors = require('moonscript.errors')
+        print('required errors!')
+        print('it is: ' .. tostring(errors))
+
+        local util = require('moonscript.util')
+        print('required util!')
+        print('it is: ' .. tostring(util))
+
+        local truncated = errors.truncate_traceback(util.trim(trace))
+        print('truncated: ' .. tostring(truncated))
+
+        local rewritten = errors.rewrite_traceback(trace, err)
+        print('rewritten: ' .. tostring(rewritten))
+
+        if rewritten then
+            return rewritten
+        else
+            return trace
+        end
+    else
+        -- skip this function and traceback
+        return debug.traceback(err, 2)
+    end
 end
 
 print('Lua error code loaded')
