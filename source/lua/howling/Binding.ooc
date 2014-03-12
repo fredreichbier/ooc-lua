@@ -10,43 +10,24 @@ BindingError: class extends Exception {
 }
 
 _TRACEBACK_LUA := "
-local onerror = function (err)
-    print('err:' .. err)
-
+return function (err)
     if package.loaded['moonscript.errors'] then
-        print('got moonscript')
-
         local trace = debug.traceback('', 2)
-        print('trace:' .. trace)
 
         -- rewrite using .moon line numbers
         local errors = require('moonscript.errors')
-        print('required errors!')
-        print('it is: ' .. tostring(errors))
-
         local util = require('moonscript.util')
-        print('required util!')
-        print('it is: ' .. tostring(util))
 
-        local truncated = errors.truncate_traceback(util.trim(trace))
-        print('truncated: ' .. tostring(truncated))
-
-        local rewritten = errors.rewrite_traceback(trace, err)
-        print('rewritten: ' .. tostring(rewritten))
-
+        local rewritten = errors.rewrite_traceback(util.trim(trace), err)
         if rewritten then
             return rewritten
         else
             return trace
         end
     else
-        -- skip this function and traceback
         return debug.traceback(err, 2)
     end
 end
-
-print('Lua error code loaded')
-return onerror
 "
 
 howling_traceback_handler: func (state: State) -> Int {
