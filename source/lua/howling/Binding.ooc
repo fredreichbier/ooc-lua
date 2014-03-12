@@ -9,6 +9,24 @@ BindingError: class extends Exception {
     }
 }
 
+_TRACEBACK_LUA := "
+local onerror = function (message)
+    -- skip this function and traceback
+    local traceback = debug.traceback(message, 2)
+
+    if package.loaded['moonscript.errors'] then
+        -- rewrite using .moon line numbers
+        print('It is happening!')
+        traceback = rewrite_traceback(traceback)
+    end
+
+    return traceback
+end
+
+print('Lua error code loaded')
+return onerror
+"
+
 howling_traceback_handler: func (state: State) -> Int {
     if (!state isString(1)) { // message not a string?
         return 1 // keep it intact
@@ -65,11 +83,18 @@ Binding: class {
         // install traceback handler
         // Since we push it at the very beginning, it will
         // always be at index 1. See tracebackHandlerIndex.
-        state pushCFunction(howling_traceback_handler)
+        // state pushCFunction(howling_traceback_handler)
+        err := state loadString(_TRACEBACK_LUA)
+        _checkErrors(err, "load traceback lua code")
+
+        err = state pcall(0, 1, tracebackHandlerIndex)
+        _checkErrors(err, "executing traceback lua code")
+
         tracebackHandlerIndex = state getTop()
+        "Traceback code installed, index = %d" printfln(tracebackHandlerIndex)
 
         // load the module
-        err := state loadString(_HOWLING_LUA)
+        err = state loadString(_HOWLING_LUA)
         _checkErrors(err, "load howling lua code")
 
         // run the module and add it to package.loaded
@@ -131,9 +156,9 @@ Binding: class {
     }
 
     _pushHowling: func {
-        state getGlobal("package")
-        state getField(-1, "loaded")
-        state getField(-1, "howling")
+        state getGlobal(c"package")
+        state getField(-1, c"loaded")
+        state getField(-1, c"howling")
         /* stack is:
             howling (top)
             loaded
