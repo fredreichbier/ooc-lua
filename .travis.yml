@@ -4,8 +4,8 @@ before_install:
   - git clone --depth=1 git://github.com/nddrylliog/rock.git -b 99x
   - (cd rock && make -s rescue)
   - export PATH=$PATH:$PWD/rock/bin
-  - wget http://luajit.org/download/LuaJIT-2.0.2.tar.gz
-  - tar -xvf LuaJIT-2.0.2.tar.gz
+  - wget http://luajit.org/download/LuaJIT-2.0.3.tar.gz
+  - tar -xvf LuaJIT-*.tar.gz
   - (cd LuaJIT-* && wget https://gist.github.com/nddrylliog/8722197/raw -O - | patch -p1)
   - (cd LuaJIT-* && make amalg PREFIX=/usr && sudo make install PREFIX=/usr)
 
